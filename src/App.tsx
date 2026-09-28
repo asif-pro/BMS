@@ -1,22 +1,52 @@
-import AppRouter from './routes/AppRouter';
-import { ThemeProvider } from '@emotion/react';
-import useCustomTheme from './hooks/useCustomTheme/useCustomTheme';
-import { CssBaseline } from '@mui/material';
+import Box from '@mui/material/Box';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+
+import '@/fonts.css';
+import '@/styles/scrollbar.css';
+
+import ThemeProvider from '@/theme';
+import { MotionLazy } from '@/components/animate';
+import { SettingsDrawer, SettingsProvider, SettingsButton } from '@/components/settings';
+
 import tanStackConfig from './configs/tanstack.config';
+import AppRouter from './routes/AppRouter';
 
 function App() {
-  const theme = useCustomTheme();
-
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <QueryClientProvider client={tanStackConfig}>
-        <ReactQueryDevtools initialIsOpen={false} />
-        <AppRouter />
-      </QueryClientProvider>
-    </ThemeProvider>
+    <SettingsProvider
+      defaultSettings={{
+        themeMode: 'light',
+        themeDirection: 'ltr',
+        themeContrast: 'default',
+        themeLayout: 'vertical',
+        themeColorPresets: 'default',
+        themeStretch: false,
+      }}
+    >
+      <ThemeProvider>
+        <MotionLazy>
+          <SettingsDrawer />
+          <Box
+            sx={{
+              position: 'fixed',
+              bottom: 24,
+              right: 24,
+              zIndex: 1200,
+              bgcolor: 'background.paper',
+              borderRadius: '50%',
+              boxShadow: (theme) => theme.customShadows.z20,
+            }}
+          >
+            <SettingsButton />
+          </Box>
+          <QueryClientProvider client={tanStackConfig}>
+            <ReactQueryDevtools initialIsOpen={false} />
+            <AppRouter />
+          </QueryClientProvider>
+        </MotionLazy>
+      </ThemeProvider>
+    </SettingsProvider>
   );
 }
 

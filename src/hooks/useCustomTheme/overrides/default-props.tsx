@@ -2,7 +2,7 @@
 
 import { type Theme } from '@mui/material/styles';
 import SvgIcon, { type SvgIconProps } from '@mui/material/SvgIcon';
-import Iconify from '../../../components/Iconify/Iconify';
+import Iconify from '@/components/iconify';
 
 const ArrowDownIcon = (props: SvgIconProps) => (
   <SvgIcon {...props}>

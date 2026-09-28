@@ -1,8 +1,11 @@
-import { Icon, type IconifyIcon } from '@iconify/react';
-import Box, { type BoxProps } from '@mui/material/Box';
 import { forwardRef } from 'react';
+import { Icon } from '@iconify/react';
 
-export type IconifyProps = IconifyIcon | string;
+import Box, { BoxProps } from '@mui/material/Box';
+
+import { IconifyProps } from './types';
+
+// ----------------------------------------------------------------------
 
 interface Props extends BoxProps {
   icon: IconifyProps;
