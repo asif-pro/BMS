@@ -6,6 +6,7 @@ import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
 import Avatar from '@mui/material/Avatar';
+import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import Container from '@mui/material/Container';
 import IconButton from '@mui/material/IconButton';
@@ -24,6 +25,7 @@ import CustomBreadcrumbs from '@/components/custom-breadcrumbs';
 import { ticketPaths } from './paths';
 import { _tickets } from './_mock';
 import TicketSeatMap from './ticket-seat-map';
+import TripTraceMap, { TripTraceFullscreen } from './trip-trace-map';
 import type { TicketItem, TicketStatus } from './types';
 
 // ----------------------------------------------------------------------
@@ -351,6 +353,8 @@ type StopEntry = {
 
 function StoppagesCard({ ticket, matchHeight }: { ticket: TicketItem; matchHeight?: number }) {
   const { t } = useTranslation('index');
+  const [flipped, setFlipped] = useState(false);
+  const [mapFullscreen, setMapFullscreen] = useState(false);
 
   const stops: StopEntry[] = [
     {
@@ -380,48 +384,115 @@ function StoppagesCard({ ticket, matchHeight }: { ticket: TicketItem; matchHeigh
   const totalKilometers = legs.reduce((sum, kilometers) => sum + kilometers, 0);
 
   return (
-    <Card
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-        maxHeight: STOPPAGES_MAX_HEIGHT,
-        height: { md: height },
-      }}
-    >
-      <Typography variant="h6" sx={{ px: 3, pt: 3, pb: 1 }}>
-        {t('STOPPAGES')}
-      </Typography>
-
-      <Box sx={{ px: 3, pt: 1, overflow: 'auto', flex: 1, minHeight: 0 }}>
-        {stops.map((stop, index) => (
-          <StopRow
-            key={stop.key}
-            stop={stop}
-            last={index === stops.length - 1}
-            distance={index < legs.length ? formatKilometers(legs[index]) : undefined}
-          />
-        ))}
-      </Box>
-
-      <Stack
-        direction="row"
-        alignItems="baseline"
-        justifyContent="space-between"
+    <>
+      <Box
         sx={{
-          mx: 3,
-          mt: 2,
-          pt: 1.75,
-          pb: 2.5,
-          borderTop: (theme) => `1px solid ${theme.palette.divider}`,
+          perspective: 1400,
+          maxHeight: STOPPAGES_MAX_HEIGHT,
+          height: { xs: 420, md: height ?? 420 },
+          minHeight: { md: height },
         }}
       >
-        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
-          {t('TOTAL')}
-        </Typography>
-        <Typography variant="subtitle2">{formatKilometers(totalKilometers)}</Typography>
-      </Stack>
-    </Card>
+        <Box
+          sx={{
+            position: 'relative',
+            width: '100%',
+            height: '100%',
+            transformStyle: 'preserve-3d',
+            transition: 'transform 0.65s cubic-bezier(0.4, 0.2, 0.2, 1)',
+            transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+          }}
+        >
+          <Card
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
+              backfaceVisibility: 'hidden',
+              WebkitBackfaceVisibility: 'hidden',
+            }}
+          >
+            <Stack
+              direction="row"
+              alignItems="center"
+              justifyContent="space-between"
+              spacing={1}
+              sx={{ px: 3, pt: 3, pb: 1 }}
+            >
+              <Typography variant="h6">{t('STOPPAGES')}</Typography>
+
+              <Button
+                size="small"
+                variant="soft"
+                color="info"
+                onClick={() => setFlipped(true)}
+                startIcon={<Iconify icon="solar:map-point-wave-bold" width={16} />}
+              >
+                {t('TRACE')}
+              </Button>
+            </Stack>
+
+            <Box sx={{ px: 3, pt: 1, overflow: 'auto', flex: 1, minHeight: 0 }}>
+              {stops.map((stop, index) => (
+                <StopRow
+                  key={stop.key}
+                  stop={stop}
+                  last={index === stops.length - 1}
+                  distance={index < legs.length ? formatKilometers(legs[index]) : undefined}
+                />
+              ))}
+            </Box>
+
+            <Stack
+              direction="row"
+              alignItems="baseline"
+              justifyContent="space-between"
+              sx={{
+                mx: 3,
+                mt: 2,
+                pt: 1.75,
+                pb: 2.5,
+                borderTop: (theme) => `1px solid ${theme.palette.divider}`,
+              }}
+            >
+              <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
+                {t('TOTAL')}
+              </Typography>
+              <Typography variant="subtitle2">{formatKilometers(totalKilometers)}</Typography>
+            </Stack>
+          </Card>
+
+          <Card
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
+              backfaceVisibility: 'hidden',
+              WebkitBackfaceVisibility: 'hidden',
+              transform: 'rotateY(180deg)',
+            }}
+          >
+            {flipped && (
+              <TripTraceMap
+                ticket={ticket}
+                onBack={() => setFlipped(false)}
+                onRequestFullscreen={() => setMapFullscreen(true)}
+              />
+            )}
+          </Card>
+        </Box>
+      </Box>
+
+      <TripTraceFullscreen
+        open={mapFullscreen}
+        ticket={ticket}
+        onClose={() => setMapFullscreen(false)}
+      />
+    </>
   );
 }
 
