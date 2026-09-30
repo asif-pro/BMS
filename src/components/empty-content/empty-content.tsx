@@ -2,6 +2,7 @@ import Box from '@mui/material/Box';
 import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import Stack, { StackProps } from '@mui/material/Stack';
+import { useTranslation } from 'react-i18next';
 
 // ----------------------------------------------------------------------
 
@@ -22,6 +23,7 @@ export default function EmptyContent({
   sx,
   ...other
 }: EmptyContentProps) {
+  const { t } = useTranslation('index');
   return (
     <Stack
       flexGrow={1}
@@ -52,13 +54,13 @@ export default function EmptyContent({
           component="span"
           sx={{ mt: 1, color: 'text.disabled', textAlign: 'center' }}
         >
-          {title}
+          {t(title)}
         </Typography>
       )}
 
       {description && (
         <Typography variant="caption" sx={{ mt: 1, color: 'text.disabled', textAlign: 'center' }}>
-          {description}
+          {t(description)}
         </Typography>
       )}
 

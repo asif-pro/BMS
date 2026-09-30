@@ -3,6 +3,7 @@ import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
+import { useTranslation } from 'react-i18next';
 
 import LinkItem from './link-item';
 import { CustomBreadcrumbsProps } from './types';
@@ -18,6 +19,7 @@ export default function CustomBreadcrumbs({
   sx,
   ...other
 }: CustomBreadcrumbsProps) {
+  const { t } = useTranslation('index');
   const lastLink = links[links.length - 1]?.name;
 
   return (
@@ -26,7 +28,7 @@ export default function CustomBreadcrumbs({
         <Box sx={{ flexGrow: 1 }}>
           {heading && (
             <Typography variant="h4" gutterBottom>
-              {heading}
+              {t(heading)}
             </Typography>
           )}
 

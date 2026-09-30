@@ -4,6 +4,7 @@ import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
 import Avatar from '@mui/material/Avatar';
 import Stack, { StackProps } from '@mui/material/Stack';
+import { useTranslation } from 'react-i18next';
 
 import Iconify from '@/components/iconify';
 import { shortDateLabel } from '@/utils/short-date-label';
@@ -28,6 +29,8 @@ export default function TicketFiltersResult({
   results,
   ...other
 }: Props) {
+  const { t } = useTranslation('index');
+
   const shortLabel = shortDateLabel(filters.startDate, filters.endDate);
 
   const handleRemoveServices = (inputValue: string) => {
@@ -61,19 +64,19 @@ export default function TicketFiltersResult({
       <Box sx={{ typography: 'body2' }}>
         <strong>{results}</strong>
         <Box component="span" sx={{ color: 'text.secondary', ml: 0.25 }}>
-          results found
+          {t('RESULTS_FOUND')}
         </Box>
       </Box>
 
       <Stack flexGrow={1} spacing={1} direction="row" flexWrap="wrap" alignItems="center">
         {filters.startDate && filters.endDate && (
-          <Block label="Available:">
+          <Block label={t('AVAILABLE_LABEL')}>
             <Chip size="small" label={shortLabel} onDelete={handleRemoveAvailable} />
           </Block>
         )}
 
         {!!filters.services.length && (
-          <Block label="Services:">
+          <Block label={t('SERVICES_LABEL')}>
             {filters.services.map((item) => (
               <Chip key={item} label={item} size="small" onDelete={() => handleRemoveServices(item)} />
             ))}
@@ -81,7 +84,7 @@ export default function TicketFiltersResult({
         )}
 
         {!!filters.operators.length && (
-          <Block label="Operator:">
+          <Block label={t('OPERATOR_LABEL')}>
             {filters.operators.map((item) => (
               <Chip
                 key={item.id}
@@ -95,7 +98,7 @@ export default function TicketFiltersResult({
         )}
 
         {!!filters.destination.length && (
-          <Block label="Destination:">
+          <Block label={t('DESTINATION_LABEL')}>
             {filters.destination.map((item) => (
               <Chip
                 key={item}
@@ -113,7 +116,7 @@ export default function TicketFiltersResult({
             onClick={onResetFilters}
             startIcon={<Iconify icon="solar:trash-bin-trash-bold" />}
           >
-            Clear
+            {t('CLEAR')}
           </Button>
         )}
       </Stack>

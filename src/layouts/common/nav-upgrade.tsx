@@ -3,6 +3,7 @@ import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import Avatar from '@mui/material/Avatar';
 import Typography from '@mui/material/Typography';
+import { useTranslation } from 'react-i18next';
 
 import { paths } from '@/routes/paths';
 import { useMockedUser } from '@/hooks/use-mocked-user';
@@ -12,6 +13,7 @@ import Label from '@/components/label';
 // ----------------------------------------------------------------------
 
 export default function NavUpgrade() {
+  const { t } = useTranslation('index');
   const { user } = useMockedUser();
 
   return (
@@ -58,7 +60,7 @@ export default function NavUpgrade() {
               borderBottomLeftRadius: 2,
             }}
           >
-            Free
+            {t('FREE')}
           </Label>
         </Box>
 
@@ -73,7 +75,7 @@ export default function NavUpgrade() {
         </Stack>
 
         <Button variant="contained" href={paths.minimalUI} target="_blank" rel="noopener">
-          Upgrade to Pro
+          {t('UPGRADE_TO_PRO')}
         </Button>
       </Stack>
     </Stack>

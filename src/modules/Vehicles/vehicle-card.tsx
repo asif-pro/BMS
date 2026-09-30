@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
@@ -34,6 +35,7 @@ type Props = {
 };
 
 export default function VehicleCard({ vehicle, onDelete }: Props) {
+  const { t } = useTranslation();
   const router = useRouter();
   const popover = usePopover();
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -146,7 +148,7 @@ export default function VehicleCard({ vehicle, onDelete }: Props) {
           >
             <MetaItem icon="mdi:bus" label={model} />
             <MetaItem icon="solar:tag-bold" label={brand} />
-            <MetaItem icon="mdi:seat-passenger" label={`${seats} seats`} />
+            <MetaItem icon="mdi:seat-passenger" label={t('SEATS_COUNT', { count: seats })} />
             <MetaItem icon="mdi:engine" label={engineType} />
             <MetaItem icon="solar:bookmark-square-bold" label={busType} />
             <MetaItem icon="solar:widget-5-bold" label={layoutLabel} />
@@ -164,7 +166,7 @@ export default function VehicleCard({ vehicle, onDelete }: Props) {
             textTransform: 'capitalize',
           }}
         >
-          {status}
+          {status === 'active' ? t('ACTIVE') : status === 'inactive' ? t('INACTIVE') : status === 'maintenance' ? t('MAINTENANCE') : status}
         </Label>
 
         <Box sx={{ p: 1, position: 'relative' }}>
@@ -180,26 +182,25 @@ export default function VehicleCard({ vehicle, onDelete }: Props) {
       >
         <MenuItem onClick={handleView}>
           <Iconify icon="solar:eye-bold" />
-          View
+          {t('VIEW')}
         </MenuItem>
 
         <MenuItem onClick={handleEdit}>
           <Iconify icon="solar:pen-bold" />
-          Edit
+          {t('EDIT')}
         </MenuItem>
 
         <MenuItem onClick={handleDeleteClick} sx={{ color: 'error.main' }}>
           <Iconify icon="solar:trash-bin-trash-bold" />
-          Delete
+          {t('DELETE')}
         </MenuItem>
       </CustomPopover>
 
       <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)} maxWidth="xs" fullWidth>
-        <DialogTitle>Delete vehicle?</DialogTitle>
+        <DialogTitle>{t('DELETE_VEHICLE_QUESTION')}</DialogTitle>
         <DialogContent>
           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            Are you sure you want to delete <strong>{name}</strong> ({plateNumber})? This action
-            cannot be undone.
+            {t('DELETE_VEHICLE_CONFIRM_DESC', { name, plateNumber })}
           </Typography>
         </DialogContent>
         <DialogActions>
@@ -209,7 +210,7 @@ export default function VehicleCard({ vehicle, onDelete }: Props) {
             onClick={() => setConfirmOpen(false)}
             startIcon={<Iconify icon="mingcute:close-line" />}
           >
-            Cancel
+            {t('CANCEL')}
           </Button>
           <Button
             variant="contained"
@@ -217,7 +218,7 @@ export default function VehicleCard({ vehicle, onDelete }: Props) {
             onClick={handleConfirmDelete}
             startIcon={<Iconify icon="solar:trash-bin-trash-bold" />}
           >
-            Delete
+            {t('DELETE')}
           </Button>
         </DialogActions>
       </Dialog>

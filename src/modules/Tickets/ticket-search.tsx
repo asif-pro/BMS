@@ -4,6 +4,7 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import InputAdornment from '@mui/material/InputAdornment';
 import Autocomplete, { autocompleteClasses } from '@mui/material/Autocomplete';
+import { useTranslation } from 'react-i18next';
 
 import { useRouter } from '@/routes/hooks';
 
@@ -23,6 +24,7 @@ type Props = {
 };
 
 export default function TicketSearch({ query, results, onSearch, hrefItem }: Props) {
+  const { t } = useTranslation('index');
   const router = useRouter();
 
   const handleClick = (id: string) => {
@@ -67,7 +69,7 @@ export default function TicketSearch({ query, results, onSearch, hrefItem }: Pro
       renderInput={(params) => (
         <TextField
           {...params}
-          placeholder="Search..."
+          placeholder={t('SEARCH_PLACEHOLDER')}
           onKeyUp={handleKeyUp}
           InputProps={{
             ...params.InputProps,

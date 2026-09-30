@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -16,6 +17,7 @@ import VehicleCard from './vehicle-card';
 // ----------------------------------------------------------------------
 
 export default function VehicleListView() {
+  const { t } = useTranslation();
   const [vehicles, setVehicles] = useState(_vehicles);
 
   const handleDelete = useCallback((id: string) => {
@@ -25,11 +27,11 @@ export default function VehicleListView() {
   return (
     <Container maxWidth={false} disableGutters>
       <CustomBreadcrumbs
-        heading="Vehicles"
+        heading="NAV_VEHICLES"
         links={[
-          { name: 'Dashboard', href: paths.dashboard.root },
-          { name: 'Fleet', href: paths.dashboard.vehicles.root },
-          { name: 'Vehicles' },
+          { name: 'NAV_DASHBOARD', href: paths.dashboard.root },
+          { name: 'NAV_FLEET', href: paths.dashboard.vehicles.root },
+          { name: 'NAV_VEHICLES' },
         ]}
         action={
           <Button
@@ -38,7 +40,7 @@ export default function VehicleListView() {
             variant="contained"
             startIcon={<Iconify icon="mingcute:add-line" />}
           >
-            New vehicle
+            {t('NEW_VEHICLE')}
           </Button>
         }
         sx={{ mb: { xs: 3, md: 5 } }}

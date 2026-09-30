@@ -7,6 +7,8 @@ import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import ListItemText from '@mui/material/ListItemText';
 
+import { useTranslation } from 'react-i18next';
+
 import Iconify from '@/components/iconify';
 import Scrollbar from '@/components/scrollbar';
 import { varHover } from '@/components/animate';
@@ -21,6 +23,7 @@ const MOCK_CONTACTS = [
 ];
 
 export default function ContactsPopover() {
+  const { t } = useTranslation('index');
   const popover = usePopover();
 
   return (
@@ -43,7 +46,10 @@ export default function ContactsPopover() {
 
       <CustomPopover open={popover.open} onClose={popover.onClose} sx={{ width: 320 }}>
         <Typography variant="h6" sx={{ p: 1.5 }}>
-          Contacts <Typography component="span" sx={{ color: 'text.secondary', typography: 'body2' }}>({MOCK_CONTACTS.length})</Typography>
+          {t('CONTACTS')}{' '}
+          <Typography component="span" sx={{ color: 'text.secondary', typography: 'body2' }}>
+            ({MOCK_CONTACTS.length})
+          </Typography>
         </Typography>
 
         <Scrollbar sx={{ maxHeight: 320 }}>

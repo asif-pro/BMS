@@ -1,5 +1,6 @@
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
+import { useTranslation } from 'react-i18next';
 
 import { RouterLink } from '@/routes/components';
 
@@ -14,6 +15,8 @@ type Props = {
 };
 
 export default function BreadcrumbsLink({ link, activeLast, disabled }: Props) {
+  const { t } = useTranslation('index');
+
   const styles = {
     typography: 'body2',
     alignItems: 'center',
@@ -42,7 +45,7 @@ export default function BreadcrumbsLink({ link, activeLast, disabled }: Props) {
         </Box>
       )}
 
-      {link.name}
+      {link.name ? t(link.name) : ''}
     </>
   );
 

@@ -1,7 +1,9 @@
-import { useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
+import Chip from '@mui/material/Chip';
 import Step from '@mui/material/Step';
 import Stack from '@mui/material/Stack';
 import Avatar from '@mui/material/Avatar';
@@ -27,6 +29,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { paths } from '@/routes/paths';
 import { useRouter } from '@/routes/hooks';
 
+import Image from '@/components/image';
 import Iconify from '@/components/iconify';
 import CustomBreadcrumbs from '@/components/custom-breadcrumbs';
 
@@ -38,27 +41,12 @@ import {
   formatTicketVehicleOption,
   type TicketVehicleOption,
 } from './_mock';
+import LayoutPreview from './layout-preview';
+import { SEAT_LAYOUTS } from './seat-layouts';
 import VehicleOptionLabel from './vehicle-option-label';
 import type { TicketOperator } from './types';
 
 // ----------------------------------------------------------------------
-
-const STEPS = ['Details', 'Stoppages', 'Services'];
-
-const STEP_COPY = [
-  {
-    title: 'Details',
-    description: 'Name, vehicle, crew, and travel dates.',
-  },
-  {
-    title: 'Stoppages',
-    description: 'From and destination stay in place. Add cities between them, then drag to reorder.',
-  },
-  {
-    title: 'Services',
-    description: 'Choose what passengers get on this trip.',
-  },
-];
 
 const STOPPAGE_CITIES = Array.from(
   new Set([
@@ -85,11 +73,11 @@ const STOPPAGE_CITIES = Array.from(
 ).sort((a, b) => a.localeCompare(b));
 
 const SERVICE_OPTIONS = [
-  { value: 'Wi-Fi', label: 'Wi-Fi', icon: 'solar:wi-fi-bold' },
-  { value: 'Food', label: 'Food', icon: 'solar:chef-hat-bold' },
-  { value: 'Toilet', label: 'Toilet', icon: 'ph:toilet-bold' },
-  { value: 'AC', label: 'AC', icon: 'solar:snowflake-bold' },
-  { value: 'Extra luggage', label: 'Extra luggage', icon: 'solar:suitcase-bold' },
+  { value: 'Wi-Fi', labelKey: 'AMENITY_WIFI', icon: 'solar:wi-fi-bold' },
+  { value: 'Food', labelKey: 'AMENITY_FOOD', icon: 'solar:chef-hat-bold' },
+  { value: 'Toilet', labelKey: 'AMENITY_TOILET', icon: 'ph:toilet-bold' },
+  { value: 'AC', labelKey: 'AMENITY_AC', icon: 'solar:snowflake-bold' },
+  { value: 'Extra luggage', labelKey: 'AMENITY_EXTRA_LUGGAGE', icon: 'solar:suitcase-bold' },
 ];
 
 type StopRole = 'from' | 'stop' | 'destination';
@@ -118,14 +106,35 @@ const StepConnector = styled(MuiStepConnector)(({ theme }) => ({
 // ----------------------------------------------------------------------
 
 export default function TripCreateView() {
+  const { t } = useTranslation();
   const router = useRouter();
   const mdUp = useMediaQuery((theme: Theme) => theme.breakpoints.up('md'));
+
+  const steps = useMemo(() => [t('DETAILS'), t('STOPPAGES'), t('SERVICES')], [t]);
+
+  const stepCopy = useMemo(
+    () => [
+      {
+        title: t('DETAILS'),
+        description: t('DETAILS_DESC'),
+      },
+      {
+        title: t('STOPPAGES'),
+        description: t('STOPPAGES_DESC'),
+      },
+      {
+        title: t('SERVICES'),
+        description: t('SERVICES_DESC'),
+      },
+    ],
+    [t]
+  );
 
   const [activeStep, setActiveStep] = useState(0);
   const [name, setName] = useState('');
   const [vehicle, setVehicle] = useState<TicketVehicleOption | null>(null);
   const [driver, setDriver] = useState<TicketOperator | null>(null);
-  const [conductor, setConductor] = useState<TicketOperator | null>(null);
+  const [associates, setAssociates] = useState<TicketOperator[]>([]);
   const [departure, setDeparture] = useState<Dayjs | null>(null);
   const [arrival, setArrival] = useState<Dayjs | null>(null);
   const [stops, setStops] = useState<StopField[]>([
@@ -194,22 +203,27 @@ export default function TripCreateView() {
     );
   };
 
-  const stepCopy = STEP_COPY[activeStep];
+  const currentStepCopy = stepCopy[activeStep];
+
+  const selectedLayout = useMemo(
+    () => (vehicle ? SEAT_LAYOUTS.find((item) => item.id === vehicle.layoutId) ?? null : null),
+    [vehicle]
+  );
 
   return (
     <>
       <CustomBreadcrumbs
-        heading="Create a new trip"
+        heading="CREATE_A_NEW_TRIP"
         links={[
-          { name: 'Dashboard', href: paths.dashboard.root },
-          { name: 'Trips', href: ticketPaths.root },
-          { name: 'New trip' },
+          { name: 'NAV_DASHBOARD', href: paths.dashboard.root },
+          { name: 'NAV_TRIPS', href: ticketPaths.root },
+          { name: 'NEW_TRIP' },
         ]}
         sx={{ mb: { xs: 3, md: 5 } }}
       />
 
       <Stepper alternativeLabel activeStep={activeStep} connector={<StepConnector />} sx={{ mb: { xs: 3, md: 5 } }}>
-        {STEPS.map((label) => (
+        {steps.map((label) => (
           <Step key={label}>
             <StepLabel StepIconComponent={StepIcon}>{label}</StepLabel>
           </Step>
@@ -227,27 +241,45 @@ export default function TripCreateView() {
         {mdUp && (
           <Box>
             <Typography variant="h6" sx={{ mb: 0.5 }}>
-              {stepCopy.title}
+              {currentStepCopy.title}
             </Typography>
-            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-              {stepCopy.description}
+            <Typography variant="body2" sx={{ color: 'text.secondary', mb: vehicle ? 3 : 0 }}>
+              {currentStepCopy.description}
             </Typography>
+
+            {vehicle && (
+              <Stack spacing={2}>
+                <Card sx={{ overflow: 'hidden' }}>
+                  <Image alt={t('VEHICLE_PREVIEW')} src={vehicle.coverUrl} ratio="4/3" />
+                  <Stack spacing={0.5} sx={{ p: 2 }}>
+                    <Typography variant="subtitle2" noWrap>
+                      {vehicle.name || vehicle.busModel}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                      {vehicle.busNumber} · {vehicle.busModel}
+                    </Typography>
+                  </Stack>
+                </Card>
+
+                {selectedLayout && <LayoutPreview layout={selectedLayout} />}
+              </Stack>
+            )}
           </Box>
         )}
 
         <Box>
           <Card>
-            {!mdUp && <CardHeader title={stepCopy.title} subheader={stepCopy.description} />}
+            {!mdUp && <CardHeader title={currentStepCopy.title} subheader={currentStepCopy.description} />}
 
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <Stack spacing={3} sx={{ p: 3 }}>
                 {activeStep === 0 && (
                   <>
-                    <Field label="Trip name">
+                    <Field label={t('TRIP_NAME')}>
                       <TextField
                         fullWidth
                         value={name}
-                        placeholder="Ex: Dhaka — Sylhet Night Coach"
+                        placeholder={t('TRIP_NAME_PLACEHOLDER')}
                         onChange={(event) => setName(event.target.value)}
                         InputProps={{
                           startAdornment: <FieldIcon icon="solar:document-text-bold" />,
@@ -255,7 +287,7 @@ export default function TripCreateView() {
                       />
                     </Field>
 
-                    <Field label="Vehicle">
+                    <Field label={t('VEHICLE')}>
                       <Autocomplete
                         options={_ticketVehicles}
                         value={vehicle}
@@ -282,7 +314,7 @@ export default function TripCreateView() {
                         renderInput={(params) => (
                           <TextField
                             {...params}
-                            placeholder="Select vehicle"
+                            placeholder={t('SELECT_VEHICLE')}
                             InputProps={{
                               ...params.InputProps,
                               startAdornment: (
@@ -311,27 +343,29 @@ export default function TripCreateView() {
                     </Field>
 
                     <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-                      <Field label="Driver">
+                      <Field label={t('DRIVER')}>
                         <StaffSelect
-                          placeholder="Select driver"
+                          placeholder={t('SELECT_DRIVER')}
                           value={driver}
-                          options={_operators.filter((person) => person.id !== conductor?.id)}
+                          options={_operators.filter(
+                            (person) => !associates.some((associate) => associate.id === person.id)
+                          )}
                           onChange={setDriver}
                         />
                       </Field>
 
-                      <Field label="Conductor">
-                        <StaffSelect
-                          placeholder="Select conductor"
-                          value={conductor}
+                      <Field label={t('ASSOCIATES')}>
+                        <StaffMultiSelect
+                          placeholder={t('SELECT_ASSOCIATES')}
+                          value={associates}
                           options={_operators.filter((person) => person.id !== driver?.id)}
-                          onChange={setConductor}
+                          onChange={setAssociates}
                         />
                       </Field>
                     </Stack>
 
                     <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-                      <Field label="Departure">
+                      <Field label={t('DEPARTURE')}>
                         <DateTimePicker
                           ampm
                           format="DD/MM/YYYY hh:mm A"
@@ -340,7 +374,7 @@ export default function TripCreateView() {
                           slotProps={{
                             textField: {
                               fullWidth: true,
-                              placeholder: 'Select date and time',
+                              placeholder: t('SELECT_DATE_AND_TIME'),
                               InputProps: {
                                 startAdornment: <FieldIcon icon="solar:calendar-bold" />,
                               },
@@ -349,7 +383,7 @@ export default function TripCreateView() {
                         />
                       </Field>
 
-                      <Field label="Arrival">
+                      <Field label={t('ARRIVAL')}>
                         <DateTimePicker
                           ampm
                           format="DD/MM/YYYY hh:mm A"
@@ -358,7 +392,7 @@ export default function TripCreateView() {
                           slotProps={{
                             textField: {
                               fullWidth: true,
-                              placeholder: 'Select date and time',
+                              placeholder: t('SELECT_DATE_AND_TIME'),
                               InputProps: {
                                 startAdornment: <FieldIcon icon="solar:calendar-mark-bold" />,
                               },
@@ -378,7 +412,7 @@ export default function TripCreateView() {
                         .map((item) => item.city);
                       const locked = stop.role !== 'stop';
                       const placeholder =
-                        stop.role === 'from' ? 'From' : stop.role === 'destination' ? 'Destination' : 'Select city';
+                        stop.role === 'from' ? t('FROM') : stop.role === 'destination' ? t('DESTINATION') : t('SELECT_CITY');
 
                       return (
                         <Stack
@@ -404,6 +438,7 @@ export default function TripCreateView() {
                               draggable
                               aria-label={`Drag ${stop.city || 'stoppage'}`}
                               onDragStart={(event) => {
+                                // eslint-disable-next-line no-param-reassign
                                 event.dataTransfer.effectAllowed = 'move';
                                 event.dataTransfer.setData('text/plain', stop.id);
                                 setDragId(stop.id);
@@ -461,7 +496,7 @@ export default function TripCreateView() {
                           {stop.role === 'destination' ? (
                             <Box sx={{ width: 40, flexShrink: 0 }} />
                           ) : (
-                            <IconButton aria-label="Add stoppage" color="primary" onClick={() => addStop(index)}>
+                            <IconButton aria-label={t('ADD_STOPPAGE')} color="primary" onClick={() => addStop(index)}>
                               <Iconify icon="mingcute:add-line" />
                             </IconButton>
                           )}
@@ -469,7 +504,7 @@ export default function TripCreateView() {
                           {locked ? (
                             <Box sx={{ width: 40, flexShrink: 0 }} />
                           ) : (
-                            <IconButton aria-label="Remove stoppage" onClick={() => removeStop(stop.id)}>
+                            <IconButton aria-label={t('REMOVE_STOPPAGE')} onClick={() => removeStop(stop.id)}>
                               <Iconify icon="mingcute:close-line" />
                             </IconButton>
                           )}
@@ -498,7 +533,7 @@ export default function TripCreateView() {
                         label={
                           <Stack direction="row" spacing={1} alignItems="center">
                             <Iconify icon={option.icon} sx={{ color: 'text.secondary' }} />
-                            {option.label}
+                            {t(option.labelKey)}
                           </Stack>
                         }
                       />
@@ -512,17 +547,17 @@ export default function TripCreateView() {
           <Stack direction="row" justifyContent="flex-end" spacing={1.5} sx={{ mt: 3 }}>
             {activeStep > 0 && (
               <Button size="large" color="inherit" variant="outlined" onClick={() => setActiveStep((step) => step - 1)}>
-                Back
+                {t('BACK')}
               </Button>
             )}
 
-            {activeStep < STEPS.length - 1 ? (
+            {activeStep < steps.length - 1 ? (
               <Button size="large" variant="contained" onClick={handleNext}>
-                Continue
+                {t('CONTINUE')}
               </Button>
             ) : (
               <Button size="large" variant="contained" onClick={handleCreate}>
-                Create trip
+                {t('CREATE_TRIP')}
               </Button>
             )}
           </Stack>
@@ -588,6 +623,66 @@ function StaffSelect({
                 ) : (
                   <FieldIcon icon="solar:user-rounded-bold" />
                 )}
+                {params.InputProps.startAdornment}
+              </>
+            ),
+          }}
+        />
+      )}
+    />
+  );
+}
+
+function StaffMultiSelect({
+  placeholder,
+  value,
+  options,
+  onChange,
+}: {
+  placeholder: string;
+  value: TicketOperator[];
+  options: TicketOperator[];
+  onChange: (value: TicketOperator[]) => void;
+}) {
+  return (
+    <Autocomplete
+      multiple
+      disableCloseOnSelect
+      options={options}
+      value={value}
+      onChange={(_, nextValue) => onChange(nextValue)}
+      getOptionLabel={(option) => option.name}
+      isOptionEqualToValue={(option, selected) => option.id === selected.id}
+      renderOption={(props, option) => (
+        <li {...props} key={option.id}>
+          <Avatar alt={option.name} src={option.avatarUrl} sx={{ width: 24, height: 24, mr: 1 }} />
+          {option.name}
+        </li>
+      )}
+      renderTags={(selected, getTagProps) =>
+        selected.map((option, index) => {
+          const { key, ...tagProps } = getTagProps({ index });
+
+          return (
+            <Chip
+              {...tagProps}
+              key={key}
+              size="small"
+              avatar={<Avatar alt={option.name} src={option.avatarUrl} />}
+              label={option.name}
+            />
+          );
+        })
+      }
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          placeholder={value.length ? undefined : placeholder}
+          InputProps={{
+            ...params.InputProps,
+            startAdornment: (
+              <>
+                {!value.length && <FieldIcon icon="solar:users-group-rounded-bold" />}
                 {params.InputProps.startAdornment}
               </>
             ),

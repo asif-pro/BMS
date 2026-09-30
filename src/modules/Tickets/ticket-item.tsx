@@ -3,6 +3,7 @@ import Link from '@mui/material/Link';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
 import ListItemText from '@mui/material/ListItemText';
+import { useTranslation } from 'react-i18next';
 
 import { RouterLink } from '@/routes/components';
 
@@ -28,6 +29,7 @@ function ticketDistance(id: string) {
 }
 
 export default function TicketItem({ ticket }: Props) {
+  const { t } = useTranslation('index');
   const { id, name, images, bookers, available, status, busNumber, driverName } = ticket;
 
   const renderImages = (
@@ -108,7 +110,7 @@ export default function TicketItem({ ticket }: Props) {
 
       <Stack spacing={1} direction="row" alignItems="center" sx={{ typography: 'body2', minWidth: 0 }}>
         <Iconify icon="solar:users-group-rounded-bold" sx={{ color: 'primary.main', flexShrink: 0 }} />
-        {bookers.length} Booked
+        {bookers.length} {t('BOOKED')}
       </Stack>
 
       <Stack
@@ -118,7 +120,7 @@ export default function TicketItem({ ticket }: Props) {
         sx={{ typography: 'body2', minWidth: 0, textTransform: 'capitalize' }}
       >
         <Iconify icon="solar:flag-bold" sx={{ color: 'warning.main', flexShrink: 0 }} />
-        {status}
+        {status === 'active' ? t('ACTIVE') : status === 'routing' ? t('ROUTING') : status === 'upcoming' ? t('UPCOMING') : status === 'canceled' ? t('CANCELLED') : status}
       </Stack>
     </Box>
   );

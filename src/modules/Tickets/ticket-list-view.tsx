@@ -1,4 +1,5 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
@@ -28,14 +29,6 @@ import type { TicketFilterValue, TicketFilters as TicketFiltersType, TicketItem,
 
 // ----------------------------------------------------------------------
 
-const STATUS_OPTIONS: { value: 'all' | TicketStatus; label: string; color: 'default' | 'success' | 'warning' | 'info' | 'error' }[] = [
-  { value: 'all', label: 'All', color: 'default' },
-  { value: 'active', label: 'Active', color: 'success' },
-  { value: 'routing', label: 'Routing', color: 'warning' },
-  { value: 'upcoming', label: 'Upcoming', color: 'info' },
-  { value: 'canceled', label: 'Cancelled', color: 'error' },
-];
-
 const defaultFilters: TicketFiltersType = {
   destination: [],
   operators: [],
@@ -47,6 +40,19 @@ const defaultFilters: TicketFiltersType = {
 // ----------------------------------------------------------------------
 
 export default function TicketListView() {
+  const { t } = useTranslation('index');
+
+  const statusOptions: { value: 'all' | TicketStatus; label: string; color: 'default' | 'success' | 'warning' | 'info' | 'error' }[] = useMemo(
+    () => [
+      { value: 'all', label: t('ALL'), color: 'default' },
+      { value: 'active', label: t('ACTIVE'), color: 'success' },
+      { value: 'routing', label: t('ROUTING'), color: 'warning' },
+      { value: 'upcoming', label: t('UPCOMING'), color: 'info' },
+      { value: 'canceled', label: t('CANCELLED'), color: 'error' },
+    ],
+    [t]
+  );
+
   const openFilters = useBoolean();
 
   const [search, setSearch] = useState<{ query: string; results: TicketItem[] }>({
@@ -56,7 +62,7 @@ export default function TicketListView() {
 
   const [filters, setFilters] = useState(defaultFilters);
 
-  const [status, setStatus] = useState<(typeof STATUS_OPTIONS)[number]['value']>('all');
+  const [status, setStatus] = useState<'all' | TicketStatus>('all');
 
   const dateError = isAfter(filters.startDate, filters.endDate);
 
@@ -76,7 +82,7 @@ export default function TicketListView() {
   const notFound = !dataFiltered.length;
 
   const handleFilterStatus = useCallback((event: React.SyntheticEvent, newValue: string) => {
-    setStatus(newValue as (typeof STATUS_OPTIONS)[number]['value']);
+    setStatus(newValue as 'all' | TicketStatus);
   }, []);
 
   const handleFilters = useCallback((name: string, value: TicketFilterValue) => {
@@ -156,10 +162,10 @@ export default function TicketListView() {
   return (
     <Container maxWidth={false} disableGutters>
       <CustomBreadcrumbs
-        heading="Select Trip"
+        heading="SELECT_TRIP"
         links={[
-          { name: 'Dashboard', href: paths.dashboard.root },
-          { name: 'Trips' },
+          { name: 'NAV_DASHBOARD', href: paths.dashboard.root },
+          { name: 'NAV_TRIPS' },
         ]}
         action={
           <Button
@@ -170,7 +176,7 @@ export default function TicketListView() {
             startIcon={<Iconify icon="mingcute:add-line" />}
             sx={{ minWidth: 180 }}
           >
-            Trip
+            {t('TRIP')}
           </Button>
         }
         sx={{
@@ -196,7 +202,7 @@ export default function TicketListView() {
           mb: { xs: 3, md: 5 },
         }}
       >
-        {STATUS_OPTIONS.map((tab) => (
+        {statusOptions.map((tab) => (
           <Tab
             key={tab.value}
             iconPosition="end"
@@ -217,7 +223,7 @@ export default function TicketListView() {
         ))}
       </Tabs>
 
-      {notFound && <EmptyContent title="No Data" filled sx={{ py: 10 }} />}
+      {notFound && <EmptyContent title="NO_DATA" filled sx={{ py: 10 }} />}
 
       <TicketList tickets={dataFiltered} />
     </Container>
@@ -234,7 +240,7 @@ const applyFilter = ({
 }: {
   inputData: TicketItem[];
   filters: TicketFiltersType;
-  status: (typeof STATUS_OPTIONS)[number]['value'];
+  status: 'all' | TicketStatus;
   dateError: boolean;
 }) => {
   const { services, destination, startDate, endDate, operators } = filters;

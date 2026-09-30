@@ -2,6 +2,7 @@ import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import { useTranslation } from 'react-i18next';
 
 import Iconify from '@/components/iconify';
 
@@ -84,6 +85,7 @@ function DeckBoard({
   selectedId: string | null;
   onSelect?: (id: string | null) => void;
 }) {
+  const { t } = useTranslation();
   const format = getSeatIdFormat(layout);
   const endCapOrder = layout.endCapOrder ?? 'driver-door';
   const frontSeats = showEndCaps ? layout.frontSeats ?? [] : [];
@@ -106,7 +108,7 @@ function DeckBoard({
         <Stack alignItems="center" spacing={0.25} sx={{ mb: 0.5 }}>
           <Iconify icon={ENGINE_ICON} width={22} sx={{ color: 'error.main' }} />
           <Typography variant="caption" sx={{ color: 'error.main', fontWeight: 800, letterSpacing: 1 }}>
-            ENGINE
+            {t('ENGINE')}
           </Typography>
         </Stack>
       )}
@@ -116,7 +118,7 @@ function DeckBoard({
           <Box sx={{ width: leftWidth }} />
           <Box sx={{ width: 36 }} />
           <Box sx={{ width: rightWidth, display: 'flex', justifyContent: 'flex-end' }}>
-            <EndCap icon={DRIVER_ICON} label="Driver" size={48} iconSize={32} />
+            <EndCap icon={DRIVER_ICON} label={t('DRIVER')} size={48} iconSize={32} />
           </Box>
         </Stack>
       )}
@@ -125,13 +127,13 @@ function DeckBoard({
         <Stack direction="row" justifyContent="space-between" sx={{ mb: 0.5 }}>
           {endCapOrder === 'door-driver' ? (
             <>
-              <EndCap icon={DOOR_ICON} label="Door" />
-              <EndCap icon={DRIVER_ICON} label="Driver" />
+              <EndCap icon={DOOR_ICON} label={t('DOOR')} />
+              <EndCap icon={DRIVER_ICON} label={t('DRIVER')} />
             </>
           ) : (
             <>
-              <EndCap icon={DRIVER_ICON} label="Driver" />
-              <EndCap icon={DOOR_ICON} label="Door" />
+              <EndCap icon={DRIVER_ICON} label={t('DRIVER')} />
+              <EndCap icon={DOOR_ICON} label={t('DOOR')} />
             </>
           )}
         </Stack>
@@ -189,9 +191,9 @@ function DeckBoard({
           const rightStart = showEndCaps ? getSideBlockAtRow(layout, 'Right', row) : null;
 
           if (leftStart || rightStart) {
-            const spanRows = [
-              ...new Set([...(leftStart?.rows ?? [row]), ...(rightStart?.rows ?? [row])]),
-            ].sort((a, b) => a - b);
+            const spanRows = Array.from(
+              new Set([...(leftStart?.rows ?? [row]), ...(rightStart?.rows ?? [row])])
+            ).sort((a, b) => a - b);
 
             spanRows.forEach((spanRow) => {
               if (spanRow !== row) {
@@ -352,13 +354,14 @@ function SideFeatureBlock({
   rows: number;
   width: number;
 }) {
+  const { t } = useTranslation();
   const height = rows * 36 + Math.max(rows - 1, 0) * 8;
   const isDoor = kind === 'door';
 
   return (
-    <Tooltip title={isDoor ? 'Door' : 'Driver'} arrow placement="left">
+    <Tooltip title={isDoor ? t('DOOR') : t('DRIVER')} arrow placement="left">
       <Box
-        aria-label={isDoor ? 'Door' : 'Driver'}
+        aria-label={isDoor ? t('DOOR') : t('DRIVER')}
         sx={{
           width,
           height,
@@ -377,7 +380,7 @@ function SideFeatureBlock({
         <Iconify icon={isDoor ? DOOR_ICON : DRIVER_ICON} width={isDoor ? 26 : 32} />
         {isDoor && (
           <Typography variant="caption" sx={{ fontWeight: 800, letterSpacing: 0.6 }}>
-            DOOR
+            {t('DOOR')}
           </Typography>
         )}
       </Box>

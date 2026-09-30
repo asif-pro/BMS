@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Paper from '@mui/material/Paper';
@@ -25,20 +27,22 @@ import {
 // ----------------------------------------------------------------------
 
 export default function VehicleLayoutView() {
+  const { t } = useTranslation();
+
   return (
     <Container maxWidth={false} disableGutters>
       <CustomBreadcrumbs
-        heading="Vehicle layouts"
+        heading="VEHICLE_LAYOUTS"
         links={[
-          { name: 'Dashboard', href: paths.dashboard.root },
-          { name: 'Vehicles', href: paths.dashboard.vehicles.root },
-          { name: 'Layout' },
+          { name: 'NAV_DASHBOARD', href: paths.dashboard.root },
+          { name: 'NAV_VEHICLES', href: paths.dashboard.vehicles.root },
+          { name: 'NAV_LAYOUT' },
         ]}
         sx={{ mb: { xs: 3, md: 5 } }}
       />
 
       <Typography variant="body2" sx={{ color: 'text.secondary', mb: 3 }}>
-        Choose a layout to inspect its full seat map.
+        {t('CHOOSE_LAYOUT_HINT')}
       </Typography>
 
       <Box
@@ -62,6 +66,7 @@ export default function VehicleLayoutView() {
 // ----------------------------------------------------------------------
 
 function LayoutCard({ layout }: { layout: LayoutConfig }) {
+  const { t } = useTranslation();
   const seatCount = layoutSeatCount(layout);
   const previewScale =
     layout.id === 'double-decker' ? 0.4 : layout.id === '1+1' ? 0.7 : layout.id === '2+2-classic' ? 0.46 : 0.52;
@@ -105,7 +110,7 @@ function LayoutCard({ layout }: { layout: LayoutConfig }) {
 
             <ListItemText
               primary={layout.label}
-              secondary={`${seatCount} seats`}
+              secondary={t('SEATS_COUNT', { count: seatCount })}
               primaryTypographyProps={{ typography: 'subtitle2', noWrap: true }}
               secondaryTypographyProps={{
                 mt: 0.5,
@@ -153,7 +158,7 @@ function LayoutCard({ layout }: { layout: LayoutConfig }) {
             position: 'absolute',
           }}
         >
-          {seatCount} seats
+          {t('SEATS_COUNT', { count: seatCount })}
         </Label>
 
         <Box sx={{ p: 1, position: 'relative' }}>

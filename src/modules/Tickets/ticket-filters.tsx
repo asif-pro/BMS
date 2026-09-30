@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
@@ -53,6 +54,7 @@ export default function TicketFilters({
   serviceOptions,
   dateError,
 }: Props) {
+  const { t } = useTranslation('index');
   const handleFilterServices = useCallback(
     (newValue: string) => {
       const checked = filters.services.includes(newValue)
@@ -85,10 +87,10 @@ export default function TicketFilters({
       sx={{ py: 2, pr: 1, pl: 2.5 }}
     >
       <Typography variant="h6" sx={{ flexGrow: 1 }}>
-        Filters
+        {t('FILTERS')}
       </Typography>
 
-      <Tooltip title="Reset">
+      <Tooltip title={t('RESET')}>
         <IconButton onClick={onResetFilters}>
           <Badge color="error" variant="dot" invisible={!canReset}>
             <Iconify icon="solar:restart-bold" />
@@ -105,23 +107,23 @@ export default function TicketFilters({
   const renderDateRange = (
     <Stack>
       <Typography variant="subtitle2" sx={{ mb: 1.5 }}>
-        Durations
+        {t('DURATIONS')}
       </Typography>
       <Stack spacing={2.5}>
         <DatePicker
-          label="Start date"
+          label={t('START_DATE')}
           value={filters.startDate ? dayjs(filters.startDate) : null}
           onChange={handleFilterStartDate}
         />
 
         <DatePicker
-          label="End date"
+          label={t('END_DATE')}
           value={filters.endDate ? dayjs(filters.endDate) : null}
           onChange={handleFilterEndDate}
           slotProps={{
             textField: {
               error: dateError,
-              helperText: dateError ? 'End date must be later than start date' : undefined,
+              helperText: dateError ? t('DATE_ERROR_MESSAGE') : undefined,
             },
           }}
         />
@@ -132,7 +134,7 @@ export default function TicketFilters({
   const renderDestination = (
     <Stack>
       <Typography variant="subtitle2" sx={{ mb: 1.5 }}>
-        Destination
+        {t('DESTINATION')}
       </Typography>
 
       <Autocomplete
@@ -145,7 +147,7 @@ export default function TicketFilters({
         renderInput={(params) => (
           <TextField
             {...params}
-            placeholder={filters.destination.length ? '+ Destination' : 'Select Destination'}
+            placeholder={filters.destination.length ? t('ADD_DESTINATION') : t('SELECT_DESTINATION')}
           />
         )}
         renderTags={(selected, getTagProps) =>
@@ -160,7 +162,7 @@ export default function TicketFilters({
   const renderOperators = (
     <Stack>
       <Typography variant="subtitle2" sx={{ mb: 1.5 }}>
-        Operator
+        {t('OPERATOR')}
       </Typography>
 
       <Autocomplete
@@ -170,7 +172,7 @@ export default function TicketFilters({
         value={filters.operators}
         onChange={(event, newValue) => onFilters('operators', newValue)}
         getOptionLabel={(option) => option.name}
-        renderInput={(params) => <TextField placeholder="Select Operators" {...params} />}
+        renderInput={(params) => <TextField placeholder={t('SELECT_OPERATORS')} {...params} />}
         renderOption={(props, operator) => (
           <li {...props} key={operator.id}>
             <Avatar
@@ -200,7 +202,7 @@ export default function TicketFilters({
   const renderServices = (
     <Stack>
       <Typography variant="subtitle2" sx={{ mb: 1 }}>
-        Services
+        {t('SERVICES')}
       </Typography>
       {serviceOptions.map((option) => (
         <FormControlLabel
@@ -229,7 +231,7 @@ export default function TicketFilters({
         }
         onClick={onOpen}
       >
-        Filters
+        {t('FILTERS')}
       </Button>
 
       <Drawer

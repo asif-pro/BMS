@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -37,6 +38,7 @@ import {
 const EMPTY = '—';
 
 export default function VehicleLayoutDetailsView() {
+  const { t } = useTranslation();
   const { layoutId } = useParams();
   const layout = findSeatLayout(layoutId);
 
@@ -60,8 +62,8 @@ export default function VehicleLayoutDetailsView() {
       <Container maxWidth={false} disableGutters>
         <EmptyContent
           filled
-          title="Layout not found"
-          description="That seat layout does not exist."
+          title="LAYOUT_NOT_FOUND"
+          description="LAYOUT_NOT_FOUND_DESC"
           action={
             <Button
               component={RouterLink}
@@ -70,7 +72,7 @@ export default function VehicleLayoutDetailsView() {
               startIcon={<Iconify icon="eva:arrow-ios-back-fill" />}
               sx={{ mt: 3 }}
             >
-              Back to layouts
+              {t('BACK_TO_LAYOUTS')}
             </Button>
           }
           sx={{ py: 10 }}
@@ -87,9 +89,9 @@ export default function VehicleLayoutDetailsView() {
       <CustomBreadcrumbs
         heading={layout.label}
         links={[
-          { name: 'Dashboard', href: paths.dashboard.root },
-          { name: 'Vehicles', href: paths.dashboard.vehicles.root },
-          { name: 'Layout', href: paths.dashboard.vehicles.layout },
+          { name: 'NAV_DASHBOARD', href: paths.dashboard.root },
+          { name: 'NAV_VEHICLES', href: paths.dashboard.vehicles.root },
+          { name: 'NAV_LAYOUT', href: paths.dashboard.vehicles.layout },
           { name: layout.label },
         ]}
         action={
@@ -100,7 +102,7 @@ export default function VehicleLayoutDetailsView() {
             color="inherit"
             startIcon={<Iconify icon="eva:arrow-ios-back-fill" />}
           >
-            Back
+            {t('BACK')}
           </Button>
         }
         sx={{ mb: { xs: 3, md: 5 } }}
@@ -121,7 +123,7 @@ export default function VehicleLayoutDetailsView() {
             </Typography>
             <Typography variant="h6">{layout.label}</Typography>
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-              {layoutSeatSummary(layout)} · {layoutSeatCount(layout)} seats
+              {layoutSeatSummary(layout)} · {t('SEATS_COUNT', { count: layoutSeatCount(layout) })}
             </Typography>
           </Stack>
 
@@ -136,7 +138,7 @@ export default function VehicleLayoutDetailsView() {
             variant="caption"
             sx={{ display: 'block', mt: 2, color: 'text.secondary', fontWeight: 600 }}
           >
-            Click a seat, then use the edit icon to set its price.
+            {t('CLICK_SEAT_PRICE_HINT')}
           </Typography>
         </Card>
 
@@ -166,6 +168,7 @@ function SeatPriceCard({
   price?: number;
   onPriceChange: (value: number) => void;
 }) {
+  const { t } = useTranslation();
   const [editing, setEditing] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [draft, setDraft] = useState('');
@@ -209,11 +212,11 @@ function SeatPriceCard({
   return (
     <Card sx={{ p: 3, position: { md: 'sticky' }, top: { md: 96 } }}>
       <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1} sx={{ mb: 2 }}>
-        <Typography variant="h6">{seat ? `Seat ${seat.id}` : 'Seat details'}</Typography>
+        <Typography variant="h6">{seat ? `${t('SEAT')} ${seat.id}` : t('SEAT_DETAILS')}</Typography>
 
         {seat ? (
           <IconButton
-            aria-label="Edit price"
+            aria-label={t('EDIT_PRICE')}
             color={editing ? 'primary' : 'default'}
             onClick={handleStartEdit}
             disabled={editing}
@@ -222,7 +225,7 @@ function SeatPriceCard({
           </IconButton>
         ) : (
           <Typography variant="caption" sx={{ color: 'text.disabled', fontWeight: 600 }}>
-            Select a seat
+            {t('SELECT_A_SEAT')}
           </Typography>
         )}
       </Stack>
@@ -235,7 +238,7 @@ function SeatPriceCard({
       >
         <Box sx={{ gridColumn: '1 / -1', minWidth: 0 }}>
           <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
-            Price
+            {t('PRICE')}
           </Typography>
           {seat ? (
             editing ? (
@@ -270,19 +273,19 @@ function SeatPriceCard({
           )}
         </Box>
 
-        <SeatField label="Row" value={seat ? String(seat.row) : undefined} />
-        <SeatField label="Deck" value={seat?.deckLabel} />
-        <SeatField label="Side" value={seat?.side} />
-        <SeatField label="Position" value={seat?.position} />
+        <SeatField label={t('ROW')} value={seat ? String(seat.row) : undefined} />
+        <SeatField label={t('DECK')} value={seat?.deckLabel} />
+        <SeatField label={t('SIDE')} value={seat?.side} />
+        <SeatField label={t('POSITION')} value={seat?.position} />
 
         <Divider sx={{ gridColumn: '1 / -1' }} />
 
         <SeatField
-          label="Default fare"
+          label={t('DEFAULT_FARE')}
           value={seat ? `৳${seat.defaultPrice.toLocaleString('en-BD')}` : undefined}
         />
         <SeatField
-          label="Current fare"
+          label={t('CURRENT_FARE')}
           value={price !== undefined ? `৳${price.toLocaleString('en-BD')}` : undefined}
         />
       </Box>
@@ -297,27 +300,23 @@ function SeatPriceCard({
           onClick={handleOpenConfirm}
           disabled={!draftValid}
         >
-          Save price
+          {t('SAVE_PRICE')}
         </Button>
       )}
 
       <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)} maxWidth="xs" fullWidth>
-        <DialogTitle>Save seat price?</DialogTitle>
+        <DialogTitle>{t('SAVE_SEAT_PRICE_QUESTION')}</DialogTitle>
         <DialogContent>
           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            Update seat {seat?.id} to{' '}
-            <Box component="span" sx={{ color: 'text.primary', fontWeight: 700 }}>
-              ৳{(nextPrice ?? 0).toLocaleString('en-BD')}
-            </Box>
-            ?
+            {t('UPDATE_SEAT_PRICE_CONFIRM', { seat: seat?.id, price: (nextPrice ?? 0).toLocaleString('en-BD') })}
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button variant="outlined" color="inherit" onClick={() => setConfirmOpen(false)}>
-            Cancel
+            {t('CANCEL')}
           </Button>
           <Button variant="contained" onClick={handleConfirmSave} sx={{ fontWeight: 700 }}>
-            Confirm
+            {t('CONFIRM')}
           </Button>
         </DialogActions>
       </Dialog>

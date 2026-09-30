@@ -9,6 +9,8 @@ import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 
+import { useTranslation } from 'react-i18next';
+
 import { paths } from '@/routes/paths';
 import { useRouter } from '@/routes/hooks';
 import { useMockedUser } from '@/hooks/use-mocked-user';
@@ -18,29 +20,29 @@ import CustomPopover, { usePopover } from '@/components/custom-popover';
 
 // ----------------------------------------------------------------------
 
-const OPTIONS = [
-  {
-    label: 'Home',
-    linkTo: '/',
-  },
-  {
-    label: 'Dashboard',
-    linkTo: paths.dashboard.root,
-  },
-  {
-    label: 'Settings',
-    linkTo: paths.dashboard.settings,
-  },
-];
-
-// ----------------------------------------------------------------------
-
 export default function AccountPopover() {
+  const { t } = useTranslation('index');
+
   const router = useRouter();
 
   const { user } = useMockedUser();
 
   const popover = usePopover();
+
+  const options = [
+    {
+      label: t('HOME'),
+      linkTo: '/',
+    },
+    {
+      label: t('DASHBOARD'),
+      linkTo: paths.dashboard.root,
+    },
+    {
+      label: t('SETTINGS'),
+      linkTo: paths.dashboard.settings,
+    },
+  ];
 
   const handleLogout = async () => {
     try {
@@ -104,8 +106,8 @@ export default function AccountPopover() {
         <Divider sx={{ borderStyle: 'dashed' }} />
 
         <Stack sx={{ p: 1 }}>
-          {OPTIONS.map((option) => (
-            <MenuItem key={option.label} onClick={() => handleClickItem(option.linkTo)}>
+          {options.map((option) => (
+            <MenuItem key={option.linkTo} onClick={() => handleClickItem(option.linkTo)}>
               {option.label}
             </MenuItem>
           ))}
@@ -117,7 +119,7 @@ export default function AccountPopover() {
           onClick={handleLogout}
           sx={{ m: 1, fontWeight: 'fontWeightBold', color: 'error.main' }}
         >
-          Logout
+          {t('LOGOUT')}
         </MenuItem>
       </CustomPopover>
     </>

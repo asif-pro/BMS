@@ -1,5 +1,6 @@
 import { addDays, set, subDays } from 'date-fns';
 
+import { SEAT_LAYOUTS, type LayoutId } from './seat-layouts';
 import type { TicketItem, TicketOperator, TicketPassenger, TicketSeat, TicketSeatColumn, TicketStatus } from './types';
 
 // ----------------------------------------------------------------------
@@ -217,6 +218,9 @@ export const _operators = OPERATORS;
 export type TicketVehicleOption = {
   busNumber: string;
   busModel: string;
+  layoutId: LayoutId;
+  coverUrl: string;
+  name: string;
 };
 
 export function formatTicketVehicleOption(option: TicketVehicleOption) {
@@ -282,9 +286,19 @@ export const _tickets: TicketItem[] = NAMES.map((name, index) => {
 
 export const _ticketVehicles: TicketVehicleOption[] = Array.from(
   new Map(
-    _tickets.map((ticket) => [
-      ticket.busNumber,
-      { busNumber: ticket.busNumber, busModel: ticket.busModel },
-    ])
+    _tickets.map((ticket, index) => {
+      const layout = SEAT_LAYOUTS[index % SEAT_LAYOUTS.length];
+
+      return [
+        ticket.busNumber,
+        {
+          busNumber: ticket.busNumber,
+          busModel: ticket.busModel,
+          layoutId: layout.id,
+          coverUrl: ticket.images[0] ?? layout.coverUrl,
+          name: ticket.busModel,
+        } satisfies TicketVehicleOption,
+      ];
+    })
   ).values()
 );

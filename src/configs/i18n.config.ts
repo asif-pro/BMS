@@ -8,13 +8,6 @@ const cookies = new Cookies();
 
 export const appLanguages = [
   { label: 'English', value: 'en', icon: 'circle-flags:uk' },
-  { label: 'French', value: 'fr', icon: 'circle-flags:fr' },
-  { label: 'Italian', value: 'it', icon: 'circle-flags:it' },
-  { label: 'Spanish', value: 'es', icon: 'circle-flags:es' },
-  { label: 'Portuguese', value: 'pt', icon: 'circle-flags:pt' },
-  { label: 'Albanian', value: 'sq', icon: 'circle-flags:al' },
-  { label: 'Turkish', value: 'tr', icon: 'circle-flags:tr' },
-  { label: 'Slovenian', value: 'sl', icon: 'circle-flags:si' },
   { label: 'Bangla', value: 'bangla', icon: 'circle-flags:bd' },
 ] as const;
 
@@ -37,6 +30,7 @@ i18n
     fallbackLng: defaultLocale,
     supportedLngs: [...availableLocales],
     ns: ['index'],
+    defaultNS: 'index',
     lng: initialLanguage,
     returnEmptyString: false,
     backend: {

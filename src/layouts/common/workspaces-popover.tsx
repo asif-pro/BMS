@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
@@ -28,6 +29,7 @@ const WORKSPACES: Workspace[] = [
 // ----------------------------------------------------------------------
 
 export default function WorkspacesPopover() {
+  const { t } = useTranslation('index');
   const popover = usePopover();
 
   const [workspace, setWorkspace] = useState(WORKSPACES[0]);
@@ -103,7 +105,7 @@ export default function WorkspacesPopover() {
           sx={{ height: 44, gap: 1, borderRadius: 1, color: 'text.secondary', '& svg': { mr: 0 } }}
         >
           <Iconify icon="mingcute:add-line" width={18} />
-          Create workspace
+          {t('CREATE_WORKSPACE')}
         </MenuItem>
       </CustomPopover>
     </>

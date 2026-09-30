@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type ChangeEvent, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -67,10 +68,8 @@ import type { TicketSeat } from './types';
 
 const SEED_TICKET = _tickets.find((ticket) => ticket.id === 'trip-1') ?? _tickets[0];
 
-const SEED_COACH: TicketVehicleOption = {
-  busNumber: SEED_TICKET.busNumber,
-  busModel: SEED_TICKET.busModel,
-};
+const SEED_COACH: TicketVehicleOption =
+  _ticketVehicles.find((option) => option.busNumber === SEED_TICKET.busNumber) ?? _ticketVehicles[0];
 
 const EMPTY = '—';
 
@@ -83,6 +82,7 @@ type QuickSeat = TicketSeat & {
 // ----------------------------------------------------------------------
 
 export default function QuickTicketView() {
+  const { t } = useTranslation();
   const { user } = useMockedUser();
 
   const [tripName, setTripName] = useState(SEED_TICKET.name);
@@ -226,11 +226,11 @@ export default function QuickTicketView() {
   return (
     <Container maxWidth={false} disableGutters>
       <CustomBreadcrumbs
-        heading="Quick Ticket"
+        heading="QUICK_TICKET"
         links={[
-          { name: 'Dashboard', href: paths.dashboard.root },
-          { name: 'Tickets', href: paths.dashboard.tickets.root },
-          { name: 'Quick Ticket' },
+          { name: 'NAV_DASHBOARD', href: paths.dashboard.root },
+          { name: 'NAV_TICKETS', href: paths.dashboard.tickets.root },
+          { name: 'QUICK_TICKET' },
         ]}
         sx={{ mb: { xs: 3, md: 5 } }}
       />
@@ -238,13 +238,13 @@ export default function QuickTicketView() {
       <Stack spacing={3}>
         <Card sx={{ p: 3 }}>
           <Stack spacing={1.5} sx={{ mb: 3, maxWidth: 320 }}>
-            <Typography variant="h6">Seat layout</Typography>
+            <Typography variant="h6">{t('SEAT_LAYOUT')}</Typography>
             <TextField
               select
               required
               fullWidth
               size="small"
-              label="Layout"
+              label={t('LAYOUT')}
               value={layoutId ?? ''}
               disabled={formLocked}
               onChange={(event) => handleLayoutChange(event.target.value as LayoutId)}
@@ -254,7 +254,7 @@ export default function QuickTicketView() {
                   if (!value) {
                     return (
                       <Box component="span" sx={{ color: 'text.disabled' }}>
-                        Select layout
+                        {t('LAYOUT_SELECT')}
                       </Box>
                     );
                   }
@@ -285,11 +285,11 @@ export default function QuickTicketView() {
                 lg: '1.4fr 1fr 1.2fr 1fr 1fr',
               }}
             >
-              <Field label="Trip name">
+              <Field label={t('TRIP_NAME')}>
                 <TextField
                   fullWidth
                   value={tripName}
-                  placeholder="Ex: Dhaka — Sylhet Night Coach"
+                  placeholder={t('TRIP_NAME_PLACEHOLDER')}
                   disabled={formLocked}
                   onChange={(event) => setTripName(event.target.value)}
                   InputProps={{
@@ -298,7 +298,7 @@ export default function QuickTicketView() {
                 />
               </Field>
 
-              <Field label="Coach">
+              <Field label={t('COACH')}>
                 <Autocomplete
                   options={_ticketVehicles}
                   value={coach}
@@ -326,7 +326,7 @@ export default function QuickTicketView() {
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      placeholder="Select coach"
+                      placeholder={t('SELECT_COACH')}
                       InputProps={{
                         ...params.InputProps,
                         startAdornment: (
@@ -354,7 +354,7 @@ export default function QuickTicketView() {
                 />
               </Field>
 
-              <Field label="Date and time">
+              <Field label={t('DATE_AND_TIME')}>
                 <DateTimePicker
                   ampm
                   format="DD/MM/YYYY hh:mm A"
@@ -364,7 +364,7 @@ export default function QuickTicketView() {
                   slotProps={{
                     textField: {
                       fullWidth: true,
-                      placeholder: 'Select date and time',
+                      placeholder: t('SELECT_DATE_AND_TIME'),
                       InputProps: {
                         startAdornment: <FieldIcon icon="solar:calendar-bold" />,
                       },
@@ -373,7 +373,7 @@ export default function QuickTicketView() {
                 />
               </Field>
 
-              <Field label="From">
+              <Field label={t('FROM')}>
                 <Autocomplete
                   options={DESTINATIONS}
                   value={from}
@@ -382,7 +382,7 @@ export default function QuickTicketView() {
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      placeholder="Select from"
+                      placeholder={t('SELECT_FROM')}
                       InputProps={{
                         ...params.InputProps,
                         startAdornment: (
@@ -397,7 +397,7 @@ export default function QuickTicketView() {
                 />
               </Field>
 
-              <Field label="To">
+              <Field label={t('TO')}>
                 <Autocomplete
                   options={DESTINATIONS}
                   value={to}
@@ -406,7 +406,7 @@ export default function QuickTicketView() {
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      placeholder="Select destination"
+                      placeholder={t('SELECT_DESTINATION')}
                       InputProps={{
                         ...params.InputProps,
                         startAdornment: (
@@ -432,7 +432,7 @@ export default function QuickTicketView() {
                 startIcon={<Iconify icon="solar:close-circle-bold" />}
                 onClick={handleCancelTrip}
               >
-                Cancel trip
+                {t('CANCEL_TRIP')}
               </Button>
             ) : (
               <Button
@@ -442,7 +442,7 @@ export default function QuickTicketView() {
                 startIcon={<Iconify icon="mingcute:add-line" />}
                 onClick={handleCreateTrip}
               >
-                Create trip
+                {t('CREATE_TRIP')}
               </Button>
             )}
           </Stack>
@@ -486,10 +486,10 @@ export default function QuickTicketView() {
       />
 
       <Dialog open={cancelConfirmOpen} onClose={() => setCancelConfirmOpen(false)} maxWidth="xs" fullWidth>
-        <DialogTitle>Cancel trip?</DialogTitle>
+        <DialogTitle>{t('CANCEL_TRIP_QUESTION')}</DialogTitle>
         <DialogContent>
           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            This will clear all fields and hide the seat layout. You can start a new trip after that.
+            {t('CANCEL_TRIP_CONFIRM_DESC')}
           </Typography>
         </DialogContent>
         <DialogActions>
@@ -499,7 +499,7 @@ export default function QuickTicketView() {
             onClick={() => setCancelConfirmOpen(false)}
             startIcon={<Iconify icon="mingcute:close-line" />}
           >
-            Keep trip
+            {t('KEEP_TRIP')}
           </Button>
           <Button
             variant="contained"
@@ -507,7 +507,7 @@ export default function QuickTicketView() {
             onClick={handleConfirmCancelTrip}
             startIcon={<Iconify icon="solar:close-circle-bold" />}
           >
-            Cancel trip
+            {t('CANCEL_TRIP')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -542,6 +542,7 @@ function QuickSeatMap({
   onOpenPurchase: () => void;
   onOpenHold: () => void;
 }) {
+  const { t } = useTranslation();
   const decks = getLayoutDecks(layout);
   const multiDeck = decks.length > 1;
   const selectedSeats = selectedIds
@@ -568,7 +569,7 @@ function QuickSeatMap({
             <Typography variant="h6">{layout.label}</Typography>
           </Box>
 
-          <IconButton aria-label="Refresh" disabled={readOnly} onClick={onRefresh}>
+          <IconButton aria-label={t('REFRESH')} disabled={readOnly} onClick={onRefresh}>
             <Iconify icon="solar:restart-bold" />
           </IconButton>
         </Stack>
@@ -584,22 +585,22 @@ function QuickSeatMap({
           <StatChip
             icon="solar:ticket-bold"
             color="warning.main"
-            label="Sold"
+            label={t('SOLD')}
             value={String(soldCount)}
           />
           <StatChip
             icon="solar:users-group-rounded-bold"
             color="success.main"
-            label="Remaining"
+            label={t('REMAINING')}
             value={String(remainingCount)}
           />
         </Stack>
 
         <Stack direction="row" spacing={2} sx={{ mb: 2 }} justifyContent="center" flexWrap="wrap" useFlexGap>
-          <Legend swatch="background.paper" label="Available" />
-          <Legend swatch="primary.main" label="Selected" />
-          <Legend swatch="action.hover" label="Booked" />
-          <Legend swatch="warning.main" label="Held" />
+          <Legend swatch="background.paper" label={t('AVAILABLE')} />
+          <Legend swatch="primary.main" label={t('SELECTED')} />
+          <Legend swatch="action.hover" label={t('BOOKED')} />
+          <Legend swatch="warning.main" label={t('HELD')} />
         </Stack>
 
         <Box
@@ -629,8 +630,8 @@ function QuickSeatMap({
 
         <Typography variant="caption" sx={{ display: 'block', mt: 2, color: 'text.secondary', fontWeight: 600 }}>
           {readOnly
-            ? 'Preview only. Create the trip to book or hold seats.'
-            : 'Click available seats to select one or more. Then purchase or hold them together.'}
+            ? t('PREVIEW_ONLY_HINT')
+            : t('CLICK_AVAILABLE_SEATS_HINT')}
         </Typography>
 
         {readOnly && (
@@ -667,12 +668,12 @@ function QuickSeatMap({
           <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1}>
             <Typography variant="h6">
               {selectedSeats.length
-                ? `${selectedSeats.length} seat${selectedSeats.length > 1 ? 's' : ''} selected`
-                : 'Selected seats'}
+                ? `${selectedSeats.length} ${t('SEATS_SELECTED')}`
+                : t('SELECTED_SEATS')}
             </Typography>
             {!selectedSeats.length && (
               <Typography variant="caption" sx={{ color: 'text.disabled', fontWeight: 600 }}>
-                Select seats
+                {t('SELECT_SEATS')}
               </Typography>
             )}
           </Stack>
@@ -701,7 +702,7 @@ function QuickSeatMap({
                 }}
               >
                 <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
-                  Total
+                  {t('TOTAL')}
                 </Typography>
                 <Typography variant="h4" sx={{ color: 'success.main', mt: 0.5 }}>
                   ৳{selectedTotal.toLocaleString('en-BD')}
@@ -718,7 +719,7 @@ function QuickSeatMap({
                   startIcon={<Iconify icon="solar:ticket-bold" />}
                   sx={{ fontWeight: 700, minHeight: 52, mb: 0.75 }}
                 >
-                  Book
+                  {t('BOOK')}
                 </Button>
                 <Button
                   fullWidth
@@ -728,7 +729,7 @@ function QuickSeatMap({
                   startIcon={<Iconify icon="solar:hourglass-bold" />}
                   sx={{ fontWeight: 700 }}
                 >
-                  Hold
+                  {t('HOLD')}
                 </Button>
                 <Button
                   fullWidth
@@ -737,13 +738,13 @@ function QuickSeatMap({
                   onClick={onClearSelection}
                   startIcon={<Iconify icon="mingcute:close-line" />}
                 >
-                  Clear
+                  {t('CLEAR')}
                 </Button>
               </Stack>
             </>
           ) : (
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-              Click seats on the layout to select them for purchase or hold.
+              {t('CLICK_SEATS_HINT')}
             </Typography>
           )}
         </Stack>
@@ -854,24 +855,26 @@ function SeatButton({
 }
 
 function SeatHoverCard({ seat }: { seat: QuickSeat }) {
+  const { t } = useTranslation();
+
   if (seat.status === 'booked') {
     return (
       <Stack spacing={1}>
-        <Typography variant="subtitle2">Seat {seat.id}</Typography>
-        <InfoRow icon="solar:user-rounded-bold" label="Booked by" value={seat.bookedBy || EMPTY} />
+        <Typography variant="subtitle2">{t('SEAT')} {seat.id}</Typography>
+        <InfoRow icon="solar:user-rounded-bold" label={t('BOOKED_BY')} value={seat.bookedBy || EMPTY} />
         <InfoRow
           icon="solar:clock-circle-bold"
-          label="Time"
+          label={t('TIME')}
           value={seat.bookedAt ? fDateTime(seat.bookedAt) : EMPTY}
         />
         <InfoRow
           icon="solar:tag-price-bold"
-          label="Price"
+          label={t('PRICE')}
           value={`৳${seat.price.toLocaleString('en-BD')}`}
         />
         <InfoRow
           icon="solar:buildings-2-bold"
-          label="Booking terminal"
+          label={t('BOOKING_TERMINAL')}
           value={seat.bookingTerminal || EMPTY}
         />
       </Stack>
@@ -880,21 +883,21 @@ function SeatHoverCard({ seat }: { seat: QuickSeat }) {
 
   return (
     <Stack spacing={1}>
-      <Typography variant="subtitle2">Seat {seat.id}</Typography>
+      <Typography variant="subtitle2">{t('SEAT')} {seat.id}</Typography>
       <Stack direction="row" spacing={1} alignItems="center">
         <Avatar src={seat.holdByAvatar} alt={seat.holdBy} sx={{ width: 28, height: 28 }}>
           {seat.holdBy?.charAt(0).toUpperCase()}
         </Avatar>
         <Box sx={{ minWidth: 0 }}>
           <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
-            Held by
+            {t('HELD_BY')}
           </Typography>
           <Typography variant="body2" noWrap>
             {seat.holdBy || EMPTY}
           </Typography>
         </Box>
       </Stack>
-      <InfoRow icon="solar:notes-bold" label="Hold note" value={seat.holdNote || EMPTY} />
+      <InfoRow icon="solar:notes-bold" label={t('HELD_NOTE')} value={seat.holdNote || EMPTY} />
     </Stack>
   );
 }
@@ -910,6 +913,7 @@ function PurchaseDialog({
   onClose: () => void;
   onPurchase: (pricedSeats: { id: string; price: number }[]) => void;
 }) {
+  const { t } = useTranslation();
   const [discountEnabled, setDiscountEnabled] = useState(false);
   const [discount, setDiscount] = useState('');
   const [discountMode, setDiscountMode] = useState<DiscountMode>('percent');
@@ -918,7 +922,7 @@ function PurchaseDialog({
     ? applySeatDiscounts(seats, discount, discountMode)
     : seats.map((seat) => ({ id: seat.id, price: seat.price }));
   const totalPrice = pricedSeats.reduce((sum, seat) => sum + seat.price, 0);
-  const seatLabel = seats.length === 1 ? seats[0]?.id : `${seats.length} seats`;
+  const seatLabel = seats.length === 1 ? seats[0]?.id : `${seats.length} ${t('SEATS_SELECTED')}`;
 
   useEffect(() => {
     if (open) {
@@ -931,7 +935,7 @@ function PurchaseDialog({
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
       <DialogTitle sx={{ pb: 1 }}>
-        {seats.length > 1 ? 'Confirm seats' : 'Confirm seat'}
+        {seats.length > 1 ? t('CONFIRM_SEATS') : t('CONFIRM_SEAT')}
       </DialogTitle>
       <DialogContent>
         <Stack spacing={2.5} sx={{ pt: 0.5 }}>
@@ -944,7 +948,7 @@ function PurchaseDialog({
             }}
           >
             <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
-              {seats.length > 1 ? 'Seats' : 'Seat'}
+              {seats.length > 1 ? t('SEATS') : t('SEAT')}
             </Typography>
             <Typography variant="h3" sx={{ my: 0.5 }}>
               {seatLabel}
@@ -976,7 +980,7 @@ function PurchaseDialog({
                 }}
               />
             }
-            label="Apply discount"
+            label={t('APPLY_DISCOUNT')}
             sx={{ mx: 0, justifyContent: 'space-between', width: 1 }}
             labelPlacement="start"
           />
@@ -986,8 +990,8 @@ function PurchaseDialog({
               <TextField
                 fullWidth
                 type="number"
-                label="Discount"
-                placeholder="Enter percentage or amount"
+                label={t('DISCOUNT')}
+                placeholder={t('ENTER_PERCENTAGE_OR_AMOUNT')}
                 value={discount}
                 onChange={(event: ChangeEvent<HTMLInputElement>) => setDiscount(event.target.value)}
                 inputProps={{ min: 0, max: discountMode === 'percent' ? 100 : undefined }}
@@ -1019,8 +1023,8 @@ function PurchaseDialog({
 
               <TextField
                 fullWidth
-                label="Total price"
-                placeholder="Total price"
+                label={t('TOTAL_PRICE')}
+                placeholder={t('TOTAL_PRICE')}
                 value={`৳${totalPrice.toLocaleString('en-BD')}`}
                 InputProps={{
                   readOnly: true,
@@ -1039,7 +1043,7 @@ function PurchaseDialog({
           )}
 
           <Typography variant="body2" sx={{ color: 'text.secondary', textAlign: 'center' }}>
-            {seats.length > 1 ? 'Purchase these seats now.' : 'Purchase this seat now.'}
+            {seats.length > 1 ? t('PURCHASE_NOW_HINT') : t('PURCHASE_NOW_SINGLE_HINT')}
           </Typography>
         </Stack>
       </DialogContent>
@@ -1050,7 +1054,7 @@ function PurchaseDialog({
           onClick={onClose}
           startIcon={<Iconify icon="mingcute:close-line" />}
         >
-          Cancel
+          {t('CANCEL')}
         </Button>
         <Box sx={{ flexGrow: 1 }} />
         <Button
@@ -1060,7 +1064,7 @@ function PurchaseDialog({
           startIcon={<Iconify icon="solar:ticket-bold" />}
           sx={{ fontWeight: 700 }}
         >
-          Purchase
+          {t('PURCHASE')}
         </Button>
       </DialogActions>
     </Dialog>
@@ -1114,10 +1118,11 @@ function HoldDialog({
   onClose: () => void;
   onHold: (note: string) => void;
 }) {
+  const { t } = useTranslation();
   const { user } = useMockedUser();
   const [note, setNote] = useState('');
   const title =
-    seatIds.length > 1 ? `Hold ${seatIds.length} seats` : `Hold seat ${seatIds[0] ?? ''}`;
+    seatIds.length > 1 ? t('HOLD_SEATS', { count: seatIds.length }) : t('HOLD_SEAT', { seat: seatIds[0] ?? '' });
 
   useEffect(() => {
     if (open) {
@@ -1132,12 +1137,12 @@ function HoldDialog({
         <Stack spacing={2.5} sx={{ pt: 1 }}>
           {seatIds.length > 1 && (
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-              Seats: {seatIds.join(', ')}
+              {t('SEATS')}: {seatIds.join(', ')}
             </Typography>
           )}
           <TextField
             fullWidth
-            label="Held by"
+            label={t('HELD_BY')}
             value={user.displayName}
             InputProps={{
               readOnly: true,
@@ -1154,8 +1159,8 @@ function HoldDialog({
             fullWidth
             multiline
             minRows={3}
-            label="Held note"
-            placeholder="Add a held note"
+            label={t('HELD_NOTE')}
+            placeholder={t('ADD_A_HELD_NOTE')}
             value={note}
             onChange={(event) => setNote(event.target.value)}
             InputProps={{
@@ -1171,7 +1176,7 @@ function HoldDialog({
       </DialogContent>
       <DialogActions>
         <Button variant="outlined" color="inherit" onClick={onClose} startIcon={<Iconify icon="mingcute:close-line" />}>
-          Cancel
+          {t('CANCEL')}
         </Button>
         <Button
           variant="contained"
@@ -1180,7 +1185,7 @@ function HoldDialog({
           startIcon={<Iconify icon="solar:hourglass-bold" />}
           onClick={() => onHold(note)}
         >
-          Hold ticket
+          {t('HOLD_TICKET')}
         </Button>
       </DialogActions>
     </Dialog>
@@ -1287,6 +1292,7 @@ function QuickDeckBoard({
   readOnly: boolean;
   onSelect: (seat: QuickSeat) => void;
 }) {
+  const { t } = useTranslation();
   const format = getSeatIdFormat(layout);
   const endCapOrder = layout.endCapOrder ?? 'driver-door';
   const showEndCaps = deck.id === 'lower';
@@ -1310,7 +1316,7 @@ function QuickDeckBoard({
         <Stack alignItems="center" spacing={0.25} sx={{ mb: 0.5 }}>
           <Iconify icon={ENGINE_ICON} width={22} sx={{ color: 'error.main' }} />
           <Typography variant="caption" sx={{ color: 'error.main', fontWeight: 800, letterSpacing: 1 }}>
-            ENGINE
+            {t('ENGINE')}
           </Typography>
         </Stack>
       )}
@@ -1320,7 +1326,7 @@ function QuickDeckBoard({
           <Box sx={{ width: leftWidth }} />
           <Box sx={{ width: 36 }} />
           <Box sx={{ width: rightWidth, display: 'flex', justifyContent: 'flex-end' }}>
-            <EndCap icon={DRIVER_ICON} label="Driver" size={48} iconSize={32} />
+            <EndCap icon={DRIVER_ICON} label={t('DRIVER')} size={48} iconSize={32} />
           </Box>
         </Stack>
       )}
@@ -1329,13 +1335,13 @@ function QuickDeckBoard({
         <Stack direction="row" justifyContent="space-between" sx={{ mb: 0.5 }}>
           {endCapOrder === 'door-driver' ? (
             <>
-              <EndCap icon={DOOR_ICON} label="Door" />
-              <EndCap icon={DRIVER_ICON} label="Driver" />
+              <EndCap icon={DOOR_ICON} label={t('DOOR')} />
+              <EndCap icon={DRIVER_ICON} label={t('DRIVER')} />
             </>
           ) : (
             <>
-              <EndCap icon={DRIVER_ICON} label="Driver" />
-              <EndCap icon={DOOR_ICON} label="Door" />
+              <EndCap icon={DRIVER_ICON} label={t('DRIVER')} />
+              <EndCap icon={DOOR_ICON} label={t('DOOR')} />
             </>
           )}
         </Stack>
@@ -1393,9 +1399,9 @@ function QuickDeckBoard({
           const rightStart = showEndCaps ? getSideBlockAtRow(layout, 'Right', row) : null;
 
           if (leftStart || rightStart) {
-            const spanRows = [
-              ...new Set([...(leftStart?.rows ?? [row]), ...(rightStart?.rows ?? [row])]),
-            ].sort((a, b) => a - b);
+            const spanRows = Array.from(
+              new Set([...(leftStart?.rows ?? [row]), ...(rightStart?.rows ?? [row])])
+            ).sort((a, b) => a - b);
 
             spanRows.forEach((spanRow) => {
               if (spanRow !== row) {
@@ -1520,13 +1526,14 @@ function QuickSideFeatureBlock({
   rows: number;
   width: number;
 }) {
+  const { t } = useTranslation();
   const height = rows * 36 + Math.max(rows - 1, 0) * 8;
   const isDoor = kind === 'door';
 
   return (
-    <Tooltip title={isDoor ? 'Door' : 'Driver'} arrow placement="left">
+    <Tooltip title={isDoor ? t('DOOR') : t('DRIVER')} arrow placement="left">
       <Box
-        aria-label={isDoor ? 'Door' : 'Driver'}
+        aria-label={isDoor ? t('DOOR') : t('DRIVER')}
         sx={{
           width,
           height,
@@ -1545,7 +1552,7 @@ function QuickSideFeatureBlock({
         <Iconify icon={isDoor ? DOOR_ICON : DRIVER_ICON} width={isDoor ? 26 : 32} />
         {isDoor && (
           <Typography variant="caption" sx={{ fontWeight: 800, letterSpacing: 0.6 }}>
-            DOOR
+            {t('DOOR')}
           </Typography>
         )}
       </Box>

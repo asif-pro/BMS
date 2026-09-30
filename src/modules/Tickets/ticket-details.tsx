@@ -1,5 +1,6 @@
 import { forwardRef, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -26,14 +27,6 @@ import TicketSeatMap from './ticket-seat-map';
 import type { TicketItem, TicketStatus } from './types';
 
 // ----------------------------------------------------------------------
-
-const STATUS_LABEL: Record<TicketStatus, string> = {
-  upcoming: 'Upcoming',
-  active: 'Active',
-  routing: 'Routing',
-  canceled: 'Cancelled',
-  completed: 'Completed',
-};
 
 const STATUS_COLOR: Record<TicketStatus, 'info' | 'success' | 'warning' | 'error' | 'default'> = {
   upcoming: 'info',
@@ -67,6 +60,7 @@ const AMENITIES: { label: string; service: string; icon: string }[] = [
 // ----------------------------------------------------------------------
 
 export default function TicketDetails() {
+  const { t } = useTranslation('index');
   const { id } = useParams();
   const ticket = _tickets.find((item) => item.id === id);
   const { ref, height } = useElementHeight<HTMLDivElement>();
@@ -75,9 +69,9 @@ export default function TicketDetails() {
     <Container maxWidth={false} disableGutters>
       <CustomBreadcrumbs
         links={[
-          { name: 'Dashboard', href: paths.dashboard.root },
-          { name: 'Trips', href: ticketPaths.root },
-          { name: ticket?.name ?? 'Ticket details' },
+          { name: 'NAV_DASHBOARD', href: paths.dashboard.root },
+          { name: 'NAV_TRIPS', href: ticketPaths.root },
+          { name: ticket?.name ?? t('TICKET_DETAILS') },
         ]}
         sx={{ mb: 3 }}
       />
@@ -96,7 +90,7 @@ export default function TicketDetails() {
           <TicketSeatMap key={ticket.id} ticket={ticket} />
         </Box>
       ) : (
-        <EmptyContent title="No Data" filled sx={{ py: 10 }} />
+        <EmptyContent title="NO_DATA" filled sx={{ py: 10 }} />
       )}
     </Container>
   );
@@ -105,8 +99,17 @@ export default function TicketDetails() {
 // ----------------------------------------------------------------------
 
 const DetailsCard = forwardRef<HTMLDivElement, { ticket: TicketItem }>(function DetailsCard({ ticket }, ref) {
+  const { t } = useTranslation('index');
   const ticketsBooked = ticket.bookers.length;
   const ticketsRemaining = Math.max(ticket.seatCapacity - ticketsBooked, 0);
+
+  const statusLabel: Record<TicketStatus, string> = {
+    upcoming: t('UPCOMING'),
+    active: t('ACTIVE'),
+    routing: t('ROUTING'),
+    canceled: t('CANCELLED'),
+    completed: t('COMPLETED'),
+  };
 
   return (
     <Card ref={ref} sx={{ p: 3 }}>
@@ -125,7 +128,7 @@ const DetailsCard = forwardRef<HTMLDivElement, { ticket: TicketItem }>(function 
           <Iconify icon="solar:routing-2-bold" width={22} sx={{ color: 'info.main', mt: 0.25 }} />
           <Box sx={{ minWidth: 0 }}>
             <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
-              Route
+              {t('ROUTE')}
             </Typography>
             <Typography variant="h6" noWrap>
               {ticket.name}
@@ -138,7 +141,7 @@ const DetailsCard = forwardRef<HTMLDivElement, { ticket: TicketItem }>(function 
           color={STATUS_COLOR[ticket.status]}
           startIcon={<Iconify icon="solar:flag-bold" />}
         >
-          {STATUS_LABEL[ticket.status]}
+          {statusLabel[ticket.status]}
         </Label>
       </Stack>
 
@@ -162,7 +165,7 @@ const DetailsCard = forwardRef<HTMLDivElement, { ticket: TicketItem }>(function 
               sx={{ mt: 0.25, color: 'text.disabled', typography: 'caption', fontWeight: 600 }}
             >
               <Iconify icon="solar:user-rounded-bold" width={16} />
-              Driver
+              {t('DRIVER')}
             </Stack>
           </Box>
         </Stack>
@@ -190,34 +193,34 @@ const DetailsCard = forwardRef<HTMLDivElement, { ticket: TicketItem }>(function 
         <DetailItem
           icon="solar:clock-circle-bold"
           color="info.main"
-          label="Departure"
+          label={t('DEPARTURE')}
           value={fDate(ticket.available.startDate)}
           sub={fTime(ticket.available.startDate, 'h:mm a')}
         />
         <DetailItem
           icon="solar:clock-circle-bold"
           color="success.main"
-          label="Arrival"
+          label={t('ARRIVAL')}
           value={fDate(ticket.available.endDate)}
           sub={fTime(ticket.available.endDate, 'h:mm a')}
         />
-        <DetailItem icon="solar:map-point-bold" color="info.main" label="From" value={ticket.origin} />
+        <DetailItem icon="solar:map-point-bold" color="info.main" label={t('FROM')} value={ticket.origin} />
         <DetailItem
           icon="mingcute:location-fill"
           color="error.main"
-          label="Destination"
+          label={t('DESTINATION')}
           value={ticket.destination}
         />
         <DetailItem
           icon="solar:users-group-rounded-bold"
           color="primary.main"
-          label="Tickets booked"
+          label={t('TICKETS_BOOKED')}
           value={String(ticketsBooked)}
         />
         <DetailItem
           icon="solar:ticket-bold"
           color="warning.main"
-          label="Tickets remaining"
+          label={t('TICKETS_REMAINING')}
           value={String(ticketsRemaining)}
         />
       </Box>
@@ -230,6 +233,8 @@ const DetailsCard = forwardRef<HTMLDivElement, { ticket: TicketItem }>(function 
 // ----------------------------------------------------------------------
 
 function TripAmenities({ services }: { services: string[] }) {
+  const { t } = useTranslation('index');
+
   return (
     <Stack
       component="ul"
@@ -248,7 +253,7 @@ function TripAmenities({ services }: { services: string[] }) {
     >
       {AMENITIES.map((amenity) => {
         const available = services.includes(amenity.service);
-        const title = available ? amenity.label : `${amenity.label} unavailable`;
+        const title = available ? amenity.label : `${amenity.label} ${t('UNAVAILABLE')}`;
 
         return (
           <Box component="li" key={amenity.service} sx={{ display: 'flex' }}>
@@ -345,6 +350,8 @@ type StopEntry = {
 };
 
 function StoppagesCard({ ticket, matchHeight }: { ticket: TicketItem; matchHeight?: number }) {
+  const { t } = useTranslation('index');
+
   const stops: StopEntry[] = [
     {
       key: 'from',
@@ -383,7 +390,7 @@ function StoppagesCard({ ticket, matchHeight }: { ticket: TicketItem; matchHeigh
       }}
     >
       <Typography variant="h6" sx={{ px: 3, pt: 3, pb: 1 }}>
-        Stoppages
+        {t('STOPPAGES')}
       </Typography>
 
       <Box sx={{ px: 3, pt: 1, overflow: 'auto', flex: 1, minHeight: 0 }}>
@@ -410,7 +417,7 @@ function StoppagesCard({ ticket, matchHeight }: { ticket: TicketItem; matchHeigh
         }}
       >
         <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
-          Total
+          {t('TOTAL')}
         </Typography>
         <Typography variant="subtitle2">{formatKilometers(totalKilometers)}</Typography>
       </Stack>

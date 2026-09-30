@@ -12,6 +12,8 @@ import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 
+import { useTranslation } from 'react-i18next';
+
 import { useBoolean } from '@/hooks/use-boolean';
 import { useResponsive } from '@/hooks/use-responsive';
 
@@ -53,20 +55,22 @@ const MOCK_NOTIFICATIONS = [
   },
 ];
 
-const TABS = [
-  {
-    value: 'all',
-    label: 'All',
-  },
-  {
-    value: 'unread',
-    label: 'Unread',
-  },
-];
-
 // ----------------------------------------------------------------------
 
 export default function NotificationsPopover() {
+  const { t } = useTranslation('index');
+
+  const tabs = [
+    {
+      value: 'all',
+      label: t('ALL'),
+    },
+    {
+      value: 'unread',
+      label: t('UNREAD'),
+    },
+  ];
+
   const drawer = useBoolean();
 
   const smUp = useResponsive('up', 'sm');
@@ -98,11 +102,11 @@ export default function NotificationsPopover() {
   const renderHead = (
     <Stack direction="row" alignItems="center" sx={{ py: 2, pl: 2.5, pr: 1, minHeight: 68 }}>
       <Typography variant="h6" sx={{ flexGrow: 1 }}>
-        Notifications
+        {t('NOTIFICATIONS')}
       </Typography>
 
       {!!totalUnRead && (
-        <Tooltip title="Mark all as read">
+        <Tooltip title={t('MARK_ALL_AS_READ')}>
           <IconButton color="primary" onClick={handleMarkAllAsRead}>
             <Iconify icon="eva:done-all-fill" />
           </IconButton>
@@ -119,7 +123,7 @@ export default function NotificationsPopover() {
 
   const renderTabs = (
     <Tabs value={currentTab} onChange={handleChangeTab}>
-      {TABS.map((tab) => (
+      {tabs.map((tab) => (
         <Tab
           key={tab.value}
           iconPosition="end"

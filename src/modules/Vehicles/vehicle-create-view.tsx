@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -22,7 +23,7 @@ import Image from '@/components/image';
 import Iconify from '@/components/iconify';
 import CustomBreadcrumbs from '@/components/custom-breadcrumbs';
 
-import SeatLayoutBoard from '@/modules/Tickets/seat-layout-board';
+import LayoutPreview from '@/modules/Tickets/layout-preview';
 import {
   layoutSeatCount,
   layoutSeatSummary,
@@ -63,6 +64,7 @@ const COVER_LABELS: Record<string, string> = {
 // ----------------------------------------------------------------------
 
 export default function VehicleCreateView() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { id } = useParams();
   const pathname = usePathname();
@@ -110,11 +112,11 @@ export default function VehicleCreateView() {
 
   const layoutHint = useMemo(() => {
     if (!layout) {
-      return 'Choose how seats are arranged on this vehicle.';
+      return t('CHOOSE_SEATS_ARRANGED_HINT');
     }
 
-    return `${layoutSeatSummary(layout)} · ${layoutSeatCount(layout)} seats`;
-  }, [layout]);
+    return `${layoutSeatSummary(layout)} · ${t('SEATS_COUNT', { count: layoutSeatCount(layout) })}`;
+  }, [layout, t]);
 
   const handleLayoutChange = (value: LayoutConfig | null) => {
     setLayout(value);
@@ -131,12 +133,12 @@ export default function VehicleCreateView() {
   return (
     <>
       <CustomBreadcrumbs
-        heading={isView ? 'Vehicle details' : isEdit ? 'Edit vehicle' : 'Add a new vehicle'}
+        heading={isView ? t('VEHICLE_DETAILS') : isEdit ? t('EDIT_VEHICLE') : t('ADD_A_NEW_VEHICLE')}
         links={[
-          { name: 'Dashboard', href: paths.dashboard.root },
-          { name: 'Fleet', href: paths.dashboard.vehicles.root },
-          { name: 'Vehicles', href: paths.dashboard.vehicles.list },
-          { name: isView ? currentVehicle?.name || 'Details' : isEdit ? 'Edit vehicle' : 'New vehicle' },
+          { name: 'NAV_DASHBOARD', href: paths.dashboard.root },
+          { name: 'NAV_FLEET', href: paths.dashboard.vehicles.root },
+          { name: 'NAV_VEHICLES', href: paths.dashboard.vehicles.list },
+          { name: isView ? currentVehicle?.name || t('DETAILS') : isEdit ? t('EDIT_VEHICLE') : t('NEW_VEHICLE') },
         ]}
         sx={{ mb: { xs: 3, md: 5 } }}
       />
@@ -152,26 +154,26 @@ export default function VehicleCreateView() {
         {mdUp && (
           <Box>
             <Typography variant="h6" sx={{ mb: 0.5 }}>
-              Vehicle details
+              {t('VEHICLE_DETAILS')}
             </Typography>
             <Typography variant="body2" sx={{ color: 'text.secondary', mb: 3 }}>
               {isView
-                ? 'Review fleet identity, specs, quantity, and seating layout for this coach.'
+                ? t('VEHICLE_DETAILS_DESC_VIEW')
                 : isEdit
-                  ? 'Update fleet identity, specs, quantity, and seating layout for this coach.'
-                  : 'Enter fleet identity, specs, quantity, and seating layout for this coach.'}
+                  ? t('VEHICLE_DETAILS_DESC_EDIT')
+                  : t('VEHICLE_DETAILS_DESC_CREATE')}
             </Typography>
 
             <Stack spacing={2}>
               {coverUrl && (
                 <Card sx={{ overflow: 'hidden' }}>
-                  <Image alt="Vehicle preview" src={coverUrl} ratio="4/3" />
+                  <Image alt={t('VEHICLE_PREVIEW')} src={coverUrl} ratio="4/3" />
                   <Stack spacing={0.5} sx={{ p: 2 }}>
                     <Typography variant="subtitle2" noWrap>
-                      {name || 'Untitled vehicle'}
+                      {name || t('UNTITLED_VEHICLE')}
                     </Typography>
                     <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                      {brand?.name || 'Brand'} · {model || 'Model'}
+                      {brand?.name || t('BRAND')} · {model || t('MODEL')}
                     </Typography>
                   </Stack>
                 </Card>
@@ -186,22 +188,22 @@ export default function VehicleCreateView() {
           <Card>
             {!mdUp && (
               <CardHeader
-                title="Vehicle details"
+                title={t('VEHICLE_DETAILS')}
                 subheader={
                   isView
-                    ? 'Review fleet identity, specs, quantity, and seating layout.'
-                    : 'Enter fleet identity, specs, quantity, and seating layout.'
+                    ? t('REVIEW_FLEET_SHORT_DESC')
+                    : t('ENTER_FLEET_SHORT_DESC')
                 }
               />
             )}
 
             <Stack spacing={3} sx={{ p: 3 }}>
               <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-                <Field label="Vehicle name">
+                <Field label={t('VEHICLE_NAME')}>
                   <TextField
                     fullWidth
                     value={name}
-                    placeholder="Ex: Coach DHK-01"
+                    placeholder={t('VEHICLE_NAME_PLACEHOLDER')}
                     disabled={readOnly}
                     onChange={(event) => setName(event.target.value)}
                     InputProps={{
@@ -210,11 +212,11 @@ export default function VehicleCreateView() {
                   />
                 </Field>
 
-                <Field label="Plate number">
+                <Field label={t('PLATE_NUMBER')}>
                   <TextField
                     fullWidth
                     value={plateNumber}
-                    placeholder="Ex: DHK-1420"
+                    placeholder={t('PLATE_NUMBER_PLACEHOLDER')}
                     disabled={readOnly}
                     onChange={(event) => setPlateNumber(event.target.value)}
                     InputProps={{
@@ -225,7 +227,7 @@ export default function VehicleCreateView() {
               </Stack>
 
               <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-                <Field label="Brand">
+                <Field label={t('BRAND')}>
                   <Autocomplete
                     options={[...VEHICLE_BRANDS]}
                     value={brand}
@@ -246,7 +248,7 @@ export default function VehicleCreateView() {
                     renderInput={(params) => (
                       <TextField
                         {...params}
-                        placeholder="Select brand"
+                        placeholder={t('SELECT_BRAND')}
                         InputProps={{
                           ...params.InputProps,
                           startAdornment: (
@@ -269,7 +271,7 @@ export default function VehicleCreateView() {
                   />
                 </Field>
 
-                <Field label="Model">
+                <Field label={t('MODEL')}>
                   <Autocomplete
                     freeSolo
                     options={VEHICLE_MODELS}
@@ -280,7 +282,7 @@ export default function VehicleCreateView() {
                     renderInput={(params) => (
                       <TextField
                         {...params}
-                        placeholder="Ex: B11R"
+                        placeholder={t('MODEL_PLACEHOLDER')}
                         InputProps={{
                           ...params.InputProps,
                           startAdornment: (
@@ -297,7 +299,7 @@ export default function VehicleCreateView() {
               </Stack>
 
               <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-                <Field label="Category">
+                <Field label={t('CATEGORY')}>
                   <TextField
                     select
                     fullWidth
@@ -310,7 +312,7 @@ export default function VehicleCreateView() {
                     }}
                   >
                     <MenuItem value="">
-                      <em>Select category</em>
+                      <em>{t('SELECT_CATEGORY')}</em>
                     </MenuItem>
                     {VEHICLE_BUS_TYPES.map((option) => (
                       <MenuItem key={option} value={option}>
@@ -320,7 +322,7 @@ export default function VehicleCreateView() {
                   </TextField>
                 </Field>
 
-                <Field label="Engine type">
+                <Field label={t('ENGINE_TYPE')}>
                   <TextField
                     select
                     fullWidth
@@ -333,7 +335,7 @@ export default function VehicleCreateView() {
                     }}
                   >
                     <MenuItem value="">
-                      <em>Select engine type</em>
+                      <em>{t('SELECT_ENGINE_TYPE')}</em>
                     </MenuItem>
                     {VEHICLE_ENGINE_TYPES.map((option) => (
                       <MenuItem key={option} value={option}>
@@ -345,39 +347,39 @@ export default function VehicleCreateView() {
               </Stack>
 
               <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-                <Field label="Number of seats">
+                <Field label={t('NUMBER_OF_SEATS')}>
                   <TextField
                     fullWidth
                     type="number"
                     value={seats}
-                    placeholder="Ex: 40"
+                    placeholder={t('SEATS_PLACEHOLDER')}
                     disabled={readOnly}
                     onChange={(event) => setSeats(event.target.value)}
                     inputProps={{ min: 1 }}
                     InputProps={{
                       startAdornment: <FieldIcon icon="mdi:seat-passenger" />,
                     }}
-                    helperText={layout && !readOnly ? 'Filled from the selected seating layout' : ' '}
+                    helperText={layout && !readOnly ? t('FILLED_FROM_LAYOUT') : ' '}
                   />
                 </Field>
 
-                <Field label="Number of vehicles">
+                <Field label={t('NUMBER_OF_VEHICLES')}>
                   <TextField
                     fullWidth
                     type="number"
                     value={quantity}
-                    placeholder="Ex: 3"
+                    placeholder={t('QUANTITY_PLACEHOLDER')}
                     disabled={readOnly}
                     onChange={(event) => setQuantity(event.target.value)}
                     inputProps={{ min: 1 }}
                     InputProps={{
                       startAdornment: <FieldIcon icon="mdi:bus-multiple" />,
                     }}
-                    helperText={readOnly ? ' ' : 'How many identical units to add'}
+                    helperText={readOnly ? ' ' : t('UNITS_TO_ADD_HELPER')}
                   />
                 </Field>
 
-                <Field label="Status">
+                <Field label={t('STATUS')}>
                   <TextField
                     select
                     fullWidth
@@ -390,18 +392,18 @@ export default function VehicleCreateView() {
                     }}
                   >
                     <MenuItem value="">
-                      <em>Select status</em>
+                      <em>{t('SELECT_STATUS')}</em>
                     </MenuItem>
                     {VEHICLE_STATUSES.map((option) => (
                       <MenuItem key={option} value={option}>
-                        {option.charAt(0).toUpperCase() + option.slice(1)}
+                        {option === 'active' ? t('ACTIVE') : option === 'inactive' ? t('INACTIVE') : t('MAINTENANCE')}
                       </MenuItem>
                     ))}
                   </TextField>
                 </Field>
               </Stack>
 
-              <Field label="Seating layout">
+              <Field label={t('SEATING_LAYOUT')}>
                 <Autocomplete
                   options={SEAT_LAYOUTS}
                   value={layout}
@@ -414,7 +416,7 @@ export default function VehicleCreateView() {
                       <Stack sx={{ py: 0.5 }}>
                         <Typography variant="body2">{option.label}</Typography>
                         <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                          {option.caption} · {layoutSeatCount(option)} seats
+                          {option.caption} · {t('SEATS_COUNT', { count: layoutSeatCount(option) })}
                         </Typography>
                       </Stack>
                     </li>
@@ -422,7 +424,7 @@ export default function VehicleCreateView() {
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      placeholder="Select seating layout"
+                      placeholder={t('SELECT_SEATING_LAYOUT')}
                       helperText={readOnly ? ' ' : layoutHint}
                       InputProps={{
                         ...params.InputProps,
@@ -438,7 +440,7 @@ export default function VehicleCreateView() {
                 />
               </Field>
 
-              <Field label="Coach photo">
+              <Field label={t('COACH_PHOTO')}>
                 <Autocomplete
                   options={VEHICLE_COVERS}
                   value={coverUrl}
@@ -466,7 +468,7 @@ export default function VehicleCreateView() {
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      placeholder="Select coach photo"
+                      placeholder={t('SELECT_COACH_PHOTO')}
                       InputProps={{
                         ...params.InputProps,
                         startAdornment: (
@@ -491,7 +493,7 @@ export default function VehicleCreateView() {
               color="inherit"
               variant="outlined"
             >
-              {isView ? 'Back' : 'Cancel'}
+              {isView ? t('BACK') : t('CANCEL')}
             </Button>
 
             {isView ? (
@@ -502,11 +504,11 @@ export default function VehicleCreateView() {
                 variant="contained"
                 startIcon={<Iconify icon="solar:pen-bold" />}
               >
-                Edit
+                {t('EDIT')}
               </Button>
             ) : (
               <Button size="large" variant="contained" onClick={handleSubmit}>
-                {isEdit ? 'Update' : 'Add vehicle'}
+                {isEdit ? t('UPDATE') : t('ADD_VEHICLE')}
               </Button>
             )}
           </Stack>
@@ -532,41 +534,5 @@ function FieldIcon({ icon }: { icon: string }) {
     <InputAdornment position="start">
       <Iconify icon={icon} sx={{ color: 'text.disabled' }} />
     </InputAdornment>
-  );
-}
-
-function LayoutPreview({ layout }: { layout: LayoutConfig }) {
-  const seatCount = layoutSeatCount(layout);
-  const previewScale =
-    layout.id === 'double-decker' ? 0.32 : layout.id === '1+1' ? 0.55 : layout.id === '2+2-classic' ? 0.36 : 0.4;
-
-  return (
-    <Card sx={{ p: 2 }}>
-      <Stack spacing={1.5}>
-        <Stack spacing={0.25}>
-          <Typography variant="subtitle2">{layout.label}</Typography>
-          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-            {layout.caption} · {seatCount} seats
-          </Typography>
-        </Stack>
-
-        <Box
-          sx={{
-            borderRadius: 1.5,
-            overflow: 'auto',
-            bgcolor: 'background.neutral',
-            pointerEvents: 'none',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            p: 1,
-          }}
-        >
-          <Box sx={{ zoom: previewScale }}>
-            <SeatLayoutBoard layout={layout} />
-          </Box>
-        </Box>
-      </Stack>
-    </Card>
   );
 }

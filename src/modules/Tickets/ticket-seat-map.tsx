@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type ChangeEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -60,6 +61,7 @@ type Props = {
 };
 
 export default function TicketSeatMap({ ticket }: Props) {
+  const { t } = useTranslation();
   const [seats, setSeats] = useState(ticket.seats);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [buyOpen, setBuyOpen] = useState(false);
@@ -126,22 +128,22 @@ export default function TicketSeatMap({ ticket }: Props) {
         <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2} sx={{ mb: 2 }}>
           <Box>
             <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
-              Lower deck · 2 + 2
+              {t('LOWER_DECK_2_2')}
             </Typography>
-            <Typography variant="h6">Seat layout</Typography>
+            <Typography variant="h6">{t('SEAT_LAYOUT')}</Typography>
           </Box>
-          <Tooltip title="Refresh">
-            <IconButton aria-label="Refresh" onClick={clearSelection}>
+          <Tooltip title={t('REFRESH')}>
+            <IconButton aria-label={t('REFRESH')} onClick={clearSelection}>
               <Iconify icon="solar:restart-bold" />
             </IconButton>
           </Tooltip>
         </Stack>
 
         <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
-          <Legend swatch="background.paper" label="Available" />
-          <Legend swatch="action.hover" label="Booked" />
-          <Legend swatch="warning.main" label="Held" />
-          <Legend swatch="primary.main" label="Selected" />
+          <Legend swatch="background.paper" label={t('AVAILABLE')} />
+          <Legend swatch="action.hover" label={t('BOOKED')} />
+          <Legend swatch="warning.main" label={t('HELD')} />
+          <Legend swatch="primary.main" label={t('SELECTED')} />
         </Stack>
 
         <Box
@@ -154,8 +156,8 @@ export default function TicketSeatMap({ ticket }: Props) {
           }}
         >
           <Stack direction="row" justifyContent="space-between" sx={{ mb: 2 }}>
-            <EndCap icon="mdi:steering" label="Driver" />
-            <EndCap icon="solar:login-3-linear" label="Door" />
+            <EndCap icon="mdi:steering" label={t('DRIVER')} />
+            <EndCap icon="solar:login-3-linear" label={t('DOOR')} />
           </Stack>
 
           <Stack spacing={1}>
@@ -167,7 +169,7 @@ export default function TicketSeatMap({ ticket }: Props) {
                   variant="caption"
                   sx={{ width: 36, textAlign: 'center', color: 'text.disabled', fontWeight: 600 }}
                 >
-                  {row === 1 ? 'Aisle' : ''}
+                  {row === 1 ? t('AISLE') : ''}
                 </Typography>
                 <SeatButton seat={seatAt(seats, 'C', row)} selectedIds={selectedIds} onSelect={handleSelect} />
                 <SeatButton seat={seatAt(seats, 'D', row)} selectedIds={selectedIds} onSelect={handleSelect} />
@@ -177,8 +179,7 @@ export default function TicketSeatMap({ ticket }: Props) {
         </Box>
 
         <Typography variant="caption" sx={{ display: 'block', mt: 2, color: 'text.secondary', fontWeight: 600 }}>
-          A and D are windows. B and C are aisle seats. Rows count from the front. Click multiple available seats to book
-          together.
+          {t('SEAT_MAP_HINT')}
         </Typography>
       </Card>
 
@@ -187,10 +188,10 @@ export default function TicketSeatMap({ ticket }: Props) {
           <Stack spacing={2}>
             <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1}>
               <Typography variant="h6">
-                {selectedSeats.length} seats selected
+                {selectedSeats.length} {t('SEATS_SELECTED')}
               </Typography>
               <Label variant="soft" color="success">
-                Available
+                {t('AVAILABLE')}
               </Label>
             </Stack>
 
@@ -207,9 +208,9 @@ export default function TicketSeatMap({ ticket }: Props) {
               ))}
             </Stack>
 
-            <SeatField label="Total" value={`৳${selectedTotal.toLocaleString('en-BD')}`} />
-            <SeatField label="Departure" value={ticket.origin} />
-            <SeatField label="Destination" value={ticket.destination} />
+            <SeatField label={t('TOTAL')} value={`৳${selectedTotal.toLocaleString('en-BD')}`} />
+            <SeatField label={t('DEPARTURE')} value={ticket.origin} />
+            <SeatField label={t('DESTINATION')} value={ticket.destination} />
 
             <Stack spacing={1.25} sx={{ mt: 1 }}>
               <Button
@@ -221,7 +222,7 @@ export default function TicketSeatMap({ ticket }: Props) {
                 sx={{ fontWeight: 700 }}
                 onClick={() => setBuyOpen(true)}
               >
-                Book
+                {t('BOOK')}
               </Button>
               <Button
                 variant="contained"
@@ -232,14 +233,14 @@ export default function TicketSeatMap({ ticket }: Props) {
                 sx={{ fontWeight: 700 }}
                 onClick={() => setHoldOpen(true)}
               >
-                Hold ticket
+                {t('HOLD_TICKET')}
               </Button>
             </Stack>
           </Stack>
         ) : (
           <>
             <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1} sx={{ mb: 2 }}>
-              <Typography variant="h6">{selected ? `Seat ${selected.id}` : 'Seat details'}</Typography>
+              <Typography variant="h6">{selected ? `${t('SEAT')} ${selected.id}` : t('SEAT_DETAILS')}</Typography>
               {selected ? (
                 <Label
                   variant="soft"
@@ -247,11 +248,11 @@ export default function TicketSeatMap({ ticket }: Props) {
                     selected.status === 'available' ? 'success' : selected.status === 'held' ? 'warning' : 'default'
                   }
                 >
-                  {selected.status === 'available' ? 'Available' : selected.status === 'held' ? 'Held' : 'Booked'}
+                  {selected.status === 'available' ? t('AVAILABLE') : selected.status === 'held' ? t('HELD') : t('BOOKED')}
                 </Label>
               ) : (
                 <Typography variant="caption" sx={{ color: 'text.disabled', fontWeight: 600 }}>
-                  Select a seat
+                  {t('SELECT_A_SEAT')}
                 </Typography>
               )}
             </Stack>
@@ -263,24 +264,24 @@ export default function TicketSeatMap({ ticket }: Props) {
               rowGap={1.75}
             >
               <SeatField
-                label="Price"
+                label={t('PRICE')}
                 value={selected ? `৳${selected.price.toLocaleString('en-BD')}` : undefined}
               />
-              <SeatField label="Row" value={selected ? String(selected.row) : undefined} />
-              <SeatField label="Side" value={selected?.side} />
-              <SeatField label="Position" value={selected?.position} />
+              <SeatField label={t('ROW')} value={selected ? String(selected.row) : undefined} />
+              <SeatField label={t('SIDE')} value={selected?.side} />
+              <SeatField label={t('POSITION')} value={selected?.position} />
               <Divider sx={{ gridColumn: '1 / -1' }} />
               {selected?.status === 'held' ? (
                 <>
                   <HoldByField name={selected.holdBy} avatarUrl={selected.holdByAvatar} />
                   <SeatField
-                    label="Held on"
+                    label={t('HELD_ON')}
                     value={selected.heldAt ? fDateTime(selected.heldAt) : undefined}
                   />
                   <Divider sx={{ gridColumn: '1 / -1' }} />
                   <Box sx={{ gridColumn: '1 / -1', minWidth: 0 }}>
                     <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
-                      Held note
+                      {t('HELD_NOTE')}
                     </Typography>
                     <Typography
                       variant="body2"
@@ -292,26 +293,26 @@ export default function TicketSeatMap({ ticket }: Props) {
                 </>
               ) : (
                 <>
-                  <PersonField label="Booked by" name={selected?.bookedBy} />
+                  <PersonField label={t('BOOKED_BY')} name={selected?.bookedBy} />
                   <SeatField
-                    label="Booking time"
+                    label={t('BOOKING_TIME')}
                     value={selected?.bookedAt ? fDateTime(selected.bookedAt) : undefined}
                   />
                   <PersonField
-                    label="Passenger"
+                    label={t('PASSENGER')}
                     name={selected?.passenger}
                     phone={selected?.passengerPhone}
                   />
-                  <SeatField label="Luggage" value={formatLuggage(selected?.luggage)} />
+                  <SeatField label={t('LUGGAGE')} value={formatLuggage(selected?.luggage, t)} />
                   <Divider sx={{ gridColumn: '1 / -1' }} />
-                  <SeatField label="Boarding" value={selected?.boarding} />
+                  <SeatField label={t('BOARDING')} value={selected?.boarding} />
                   <Box />
                   {selected?.status === 'booked' && (
                     <>
                       <Divider sx={{ gridColumn: '1 / -1' }} />
                       <Box sx={{ gridColumn: '1 / -1', minWidth: 0 }}>
                         <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
-                          Note
+                          {t('NOTE')}
                         </Typography>
                         <Typography
                           variant="body2"
@@ -324,8 +325,8 @@ export default function TicketSeatMap({ ticket }: Props) {
                   )}
                 </>
               )}
-              <SeatField label="Departure" value={selected ? ticket.origin : undefined} />
-              <SeatField label="Destination" value={selected ? ticket.destination : undefined} />
+              <SeatField label={t('DEPARTURE')} value={selected ? ticket.origin : undefined} />
+              <SeatField label={t('DESTINATION')} value={selected ? ticket.destination : undefined} />
             </Box>
             {selected?.status === 'available' && (
               <Stack spacing={1.25} sx={{ mt: 3 }}>
@@ -338,7 +339,7 @@ export default function TicketSeatMap({ ticket }: Props) {
                   sx={{ fontWeight: 700 }}
                   onClick={() => setBuyOpen(true)}
                 >
-                  Book
+                  {t('BOOK')}
                 </Button>
                 <Button
                   variant="contained"
@@ -349,13 +350,13 @@ export default function TicketSeatMap({ ticket }: Props) {
                   sx={{ fontWeight: 700 }}
                   onClick={() => setHoldOpen(true)}
                 >
-                  Hold ticket
+                  {t('HOLD_TICKET')}
                 </Button>
               </Stack>
             )}
             {selected?.status === 'held' && (
               <Button variant="outlined" color="warning" size="large" fullWidth sx={{ mt: 3, fontWeight: 700 }}>
-                Cancel hold
+                {t('CANCEL_HOLD')}
               </Button>
             )}
             {selected?.status === 'booked' && (
@@ -366,7 +367,7 @@ export default function TicketSeatMap({ ticket }: Props) {
                 startIcon={<Iconify icon="solar:printer-bold" />}
                 sx={{ mt: 3, fontWeight: 700 }}
               >
-                Print Ticket
+                {t('PRINT_TICKET')}
               </Button>
             )}
           </>
@@ -454,6 +455,7 @@ function BuyTicketDialog({
   onClose: () => void;
   onBuy: (form: BuyForm) => void;
 }) {
+  const { t } = useTranslation();
   const [form, setForm] = useState(EMPTY_BUY_FORM);
   const seatIds = seats.map((seat) => seat.id);
   const subtotal = seats.reduce((sum, seat) => sum + seat.price, 0);
@@ -462,7 +464,7 @@ function BuyTicketDialog({
     0
   );
   const title =
-    seats.length > 1 ? `Buy ${seats.length} seats` : `Buy seat ${seatIds[0] ?? ''}`;
+    seats.length > 1 ? t('BUY_SEATS', { count: seats.length }) : t('BUY_SEAT', { seat: seatIds[0] ?? '' });
 
   useEffect(() => {
     if (open) {
@@ -487,21 +489,21 @@ function BuyTicketDialog({
         <Stack spacing={2.5} sx={{ pt: 1 }}>
           {seats.length > 1 && (
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-              Seats: {seatIds.join(', ')} · Subtotal ৳{subtotal.toLocaleString('en-BD')}
+              {t('SEATS')}: {seatIds.join(', ')} · {t('SUBTOTAL')} ৳{subtotal.toLocaleString('en-BD')}
             </Typography>
           )}
           <TextField
             fullWidth
-            label="Passenger name"
-            placeholder="Enter passenger name"
+            label={t('PASSENGER_NAME')}
+            placeholder={t('ENTER_PASSENGER_NAME')}
             value={form.passenger}
             onChange={setField('passenger')}
             InputProps={fieldIcon('solar:user-rounded-bold')}
           />
           <TextField
             fullWidth
-            label="Phone number"
-            placeholder="Enter phone number"
+            label={t('PHONE_NUMBER')}
+            placeholder={t('ENTER_PHONE_NUMBER')}
             value={form.phoneNumber}
             onChange={setField('phoneNumber')}
             InputProps={fieldIcon('solar:phone-bold')}
@@ -509,7 +511,7 @@ function BuyTicketDialog({
           <TextField
             select
             fullWidth
-            label="Boarding"
+            label={t('BOARDING')}
             value={form.boarding}
             onChange={setField('boarding')}
             InputProps={fieldIcon('solar:map-point-bold')}
@@ -520,7 +522,7 @@ function BuyTicketDialog({
                   String(value)
                 ) : (
                   <Box component="span" sx={{ color: 'text.disabled' }}>
-                    Select boarding
+                    {t('SELECT_BOARDING')}
                   </Box>
                 ),
             }}
@@ -534,8 +536,8 @@ function BuyTicketDialog({
           <TextField
             fullWidth
             type="number"
-            label="Number of luggage"
-            placeholder="Enter number of bags"
+            label={t('NUMBER_OF_LUGGAGE')}
+            placeholder={t('ENTER_NUMBER_OF_BAGS')}
             value={form.luggage}
             onChange={setField('luggage')}
             inputProps={{ min: 0 }}
@@ -545,8 +547,8 @@ function BuyTicketDialog({
             fullWidth
             multiline
             minRows={3}
-            label="Note"
-            placeholder="Add a note"
+            label={t('NOTE')}
+            placeholder={t('ADD_A_NOTE')}
             value={form.note}
             onChange={setField('note')}
             InputProps={{
@@ -557,8 +559,8 @@ function BuyTicketDialog({
           <TextField
             fullWidth
             type="number"
-            label="Discount"
-            placeholder="Enter percentage or amount"
+            label={t('DISCOUNT')}
+            placeholder={t('ENTER_PERCENTAGE_OR_AMOUNT')}
             value={form.discount}
             onChange={setField('discount')}
             inputProps={{ min: 0, max: form.discountMode === 'percent' ? 100 : undefined }}
@@ -585,8 +587,8 @@ function BuyTicketDialog({
           />
           <TextField
             fullWidth
-            label="Total price"
-            placeholder="Total price"
+            label={t('TOTAL_PRICE')}
+            placeholder={t('TOTAL_PRICE')}
             value={`৳${total.toLocaleString('en-BD')}`}
             InputProps={{ ...fieldIcon('solar:tag-price-bold'), readOnly: true }}
           />
@@ -595,10 +597,10 @@ function BuyTicketDialog({
 
       <DialogActions>
         <Button variant="outlined" color="inherit" onClick={onClose}>
-          Cancel
+          {t('CANCEL')}
         </Button>
         <Button variant="contained" color="success" onClick={() => onBuy(form)} sx={{ fontWeight: 700 }}>
-          Buy
+          {t('BUY')}
         </Button>
       </DialogActions>
     </Dialog>
@@ -616,10 +618,11 @@ function HoldTicketDialog({
   onClose: () => void;
   onHold: (value: { name: string; avatarUrl: string; note: string }) => void;
 }) {
+  const { t } = useTranslation();
   const { user } = useMockedUser();
   const [note, setNote] = useState('');
   const title =
-    seatIds.length > 1 ? `Hold ${seatIds.length} seats` : `Hold seat ${seatIds[0] ?? ''}`;
+    seatIds.length > 1 ? t('HOLD_SEATS', { count: seatIds.length }) : t('HOLD_SEAT', { seat: seatIds[0] ?? '' });
 
   useEffect(() => {
     if (open) {
@@ -635,14 +638,14 @@ function HoldTicketDialog({
         <Stack spacing={2.5} sx={{ pt: 1 }}>
           {seatIds.length > 1 && (
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-              Seats: {seatIds.join(', ')}
+              {t('SEATS')}: {seatIds.join(', ')}
             </Typography>
           )}
           <TextField
             fullWidth
-            label="Held by"
+            label={t('HELD_BY')}
             value={user?.displayName ?? ''}
-            placeholder="Held by"
+            placeholder={t('HELD_BY')}
             InputProps={{
               readOnly: true,
               startAdornment: (
@@ -658,8 +661,8 @@ function HoldTicketDialog({
             fullWidth
             multiline
             minRows={3}
-            label="Held note"
-            placeholder="Add a held note"
+            label={t('HELD_NOTE')}
+            placeholder={t('ADD_A_HELD_NOTE')}
             value={note}
             onChange={(event) => setNote(event.target.value)}
             InputProps={{
@@ -672,7 +675,7 @@ function HoldTicketDialog({
 
       <DialogActions>
         <Button variant="outlined" color="inherit" onClick={onClose}>
-          Cancel
+          {t('CANCEL')}
         </Button>
         <Button
           variant="contained"
@@ -680,7 +683,7 @@ function HoldTicketDialog({
           sx={{ fontWeight: 700 }}
           onClick={() => onHold({ name: user?.displayName ?? '', avatarUrl: user?.photoURL ?? '', note })}
         >
-          Hold ticket
+          {t('HOLD_TICKET')}
         </Button>
       </DialogActions>
     </Dialog>
@@ -741,9 +744,12 @@ function seatAt(seats: TicketSeat[], column: TicketSeatColumn, row: number) {
   return seat;
 }
 
-function formatLuggage(count?: number) {
+function formatLuggage(count?: number, t?: (key: string, options?: Record<string, unknown>) => string) {
   if (count === undefined) {
     return undefined;
+  }
+  if (t) {
+    return count === 1 ? t('BAG_SINGLE') : t('BAG_PLURAL', { count });
   }
   return count === 1 ? '1 bag' : `${count} bags`;
 }
@@ -830,10 +836,12 @@ function Legend({ swatch, label }: { swatch: string; label: string }) {
 }
 
 function HoldByField({ name, avatarUrl }: { name?: string; avatarUrl?: string }) {
+  const { t } = useTranslation();
+
   return (
     <Box sx={{ minWidth: 0 }}>
       <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
-        Held by
+        {t('HELD_BY')}
       </Typography>
       <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 0.5 }}>
         <Avatar src={avatarUrl} alt={name} sx={{ width: 32, height: 32 }}>

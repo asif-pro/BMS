@@ -1,5 +1,6 @@
 import Typography from '@mui/material/Typography';
 import Paper, { PaperProps } from '@mui/material/Paper';
+import { useTranslation } from 'react-i18next';
 
 // ----------------------------------------------------------------------
 
@@ -8,6 +9,8 @@ interface Props extends PaperProps {
 }
 
 export default function SearchNotFound({ query, sx, ...other }: Props) {
+  const { t } = useTranslation('index');
+
   return query ? (
     <Paper
       sx={{
@@ -18,18 +21,18 @@ export default function SearchNotFound({ query, sx, ...other }: Props) {
       {...other}
     >
       <Typography variant="h6" gutterBottom>
-        Not Found
+        {t('NOT_FOUND')}
       </Typography>
 
       <Typography variant="body2">
-        No results found for &nbsp;
+        {t('NO_RESULTS_FOUND_FOR')} &nbsp;
         <strong>&quot;{query}&quot;</strong>.
-        <br /> Try checking for typos or using complete words.
+        <br /> {t('SEARCH_NOT_FOUND_HINT')}
       </Typography>
     </Paper>
   ) : (
     <Typography variant="body2" sx={sx}>
-      Please enter keywords
+      {t('PLEASE_ENTER_KEYWORDS')}
     </Typography>
   );
 }

@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { paths } from '@/routes/paths';
 
@@ -29,86 +30,88 @@ const ICONS = {
 // ----------------------------------------------------------------------
 
 export function useNavData() {
+  const { t } = useTranslation('index');
+
   const data = useMemo(
     () => [
       {
         items: [
           {
-            title: 'Dashboard',
+            title: t('NAV_DASHBOARD'),
             path: paths.dashboard.root,
             icon: ICONS.dashboard,
           },
           {
-            title: 'Analytics',
+            title: t('NAV_ANALYTICS'),
             path: paths.dashboard.analytics,
             icon: ICONS.analytics,
           },
           {
-            title: 'Accounts',
+            title: t('NAV_ACCOUNTS'),
             path: paths.dashboard.accounts,
             icon: ICONS.accounts,
           },
           {
-            title: 'Trips',
+            title: t('NAV_TRIPS'),
             path: paths.dashboard.trips.root,
             icon: ICONS.trips,
           },
           {
-            title: 'Tickets',
+            title: t('NAV_TICKETS'),
             path: paths.dashboard.tickets.root,
             icon: ICONS.tickets,
-            children: [{ title: 'Quick Ticket', path: paths.dashboard.tickets.quick }],
+            children: [{ title: t('NAV_QUICK_TICKET'), path: paths.dashboard.tickets.quick }],
           },
           {
-            title: 'Bookings',
+            title: t('NAV_BOOKINGS'),
             path: paths.dashboard.bookings,
             icon: ICONS.bookings,
           },
           {
-            title: 'Fleet',
+            title: t('NAV_FLEET'),
             path: paths.dashboard.vehicles.root,
             icon: ICONS.fleet,
             children: [
-              { title: 'Vehicles', path: paths.dashboard.vehicles.list },
-              { title: 'Layout', path: paths.dashboard.vehicles.layout },
-              { title: 'Maintenance', path: paths.dashboard.vehicles.maintenance },
+              { title: t('NAV_VEHICLES'), path: paths.dashboard.vehicles.list },
+              { title: t('NAV_LAYOUT'), path: paths.dashboard.vehicles.layout },
+              { title: t('NAV_MAINTENANCE'), path: paths.dashboard.vehicles.maintenance },
             ],
           },
           {
-            title: 'Terminals',
+            title: t('NAV_TERMINALS'),
             path: paths.dashboard.terminals,
             icon: ICONS.terminals,
           },
           {
-            title: 'Customers',
+            title: t('NAV_CUSTOMERS'),
             path: paths.dashboard.customers,
             icon: ICONS.customers,
           },
           {
-            title: 'User management',
+            title: t('NAV_USER_MANAGEMENT'),
             path: paths.dashboard.users.root,
             icon: ICONS.users,
-            children: [{ title: 'Staff', path: paths.dashboard.users.staff }],
+            children: [{ title: t('NAV_STAFF'), path: paths.dashboard.users.staff }],
           },
           {
-            title: 'Settings',
+            title: t('NAV_SETTINGS'),
             path: paths.dashboard.settings,
             icon: ICONS.settings,
           },
           {
-            title: 'Report',
+            title: t('NAV_REPORT'),
             path: paths.dashboard.report,
             icon: ICONS.report,
           },
           {
-            title: 'Help and support',
+            title: t('NAV_HELP_AND_SUPPORT'),
             path: paths.dashboard.help,
             icon: ICONS.help,
           },
         ],
       },
     ],
-    []
+    [t]
   );
 
   return data;
