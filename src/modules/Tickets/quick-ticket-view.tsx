@@ -45,10 +45,17 @@ import {
 } from './_mock';
 import VehicleOptionLabel from './vehicle-option-label';
 import {
+  aisleLabelForRow,
+  buildLayoutSeats,
   DOOR_ICON,
   DRIVER_ICON,
+  ENGINE_ICON,
   getLayoutDecks,
+  getSeatIdFormat,
+  getSideBlockAtRow,
+  isSeatBlockedBySideBlock,
   seatIdForDeck,
+  type SideBlockKind,
   SEAT_LAYOUTS,
   type DeckConfig,
   type LayoutConfig,
@@ -608,6 +615,7 @@ function QuickSeatMap({
             {decks.map((deck) => (
               <QuickDeckBoard
                 key={deck.id}
+                layout={layout}
                 deck={deck}
                 showLabel={multiDeck}
                 seats={seats}
@@ -703,13 +711,14 @@ function QuickSeatMap({
               <Stack spacing={1}>
                 <Button
                   fullWidth
+                  size="large"
                   variant="contained"
                   color="success"
                   onClick={onOpenPurchase}
                   startIcon={<Iconify icon="solar:ticket-bold" />}
-                  sx={{ fontWeight: 700 }}
+                  sx={{ fontWeight: 700, minHeight: 52, mb: 0.75 }}
                 >
-                  Purchase
+                  Book
                 </Button>
                 <Button
                   fullWidth
@@ -770,9 +779,10 @@ function SeatButton({
         }
       }}
       sx={{
-        width: 48,
+        minWidth: 48,
+        width: seat.id.includes('-') ? 52 : 48,
         height: 36,
-        p: 0,
+        px: 0.25,
         borderRadius: 1,
         typography: 'caption',
         fontWeight: 700,
@@ -1229,41 +1239,26 @@ function seedSeatsForLayout(layoutId: LayoutId): QuickSeat[] {
   const layout = SEAT_LAYOUTS.find((item) => item.id === layoutId) ?? SEAT_LAYOUTS[0];
   const seedById = new Map(SEED_TICKET.seats.map((seat) => [seat.id, seat]));
 
-  return getLayoutDecks(layout).flatMap((deck) => {
-    const columns = [...deck.left, ...deck.right];
+  return buildLayoutSeats(layout).map((info) => {
+    const seed = seedById.get(info.id);
 
-    return columns.flatMap((column) =>
-      Array.from({ length: deck.rows }, (_, index) => {
-        const row = index + 1;
-        const id = seatIdForDeck(deck, column, row);
-        const seed = seedById.get(id);
-        const leftSide = deck.left.includes(column);
+    if (seed) {
+      return {
+        ...seed,
+        bookingTerminal:
+          seed.status === 'booked' ? seed.boarding || SEED_TICKET.origin || 'Counter desk' : undefined,
+      };
+    }
 
-        if (seed) {
-          return {
-            ...seed,
-            bookingTerminal:
-              seed.status === 'booked' ? seed.boarding || SEED_TICKET.origin || 'Counter desk' : undefined,
-          };
-        }
-
-        return {
-          id,
-          row,
-          column,
-          side: leftSide ? 'Left' : 'Right',
-          position: leftSide
-            ? column === deck.left[0]
-              ? 'Window'
-              : 'Aisle'
-            : column === deck.right[deck.right.length - 1]
-              ? 'Window'
-              : 'Aisle',
-          status: 'available',
-          price: SEED_TICKET.price || 850,
-        } satisfies QuickSeat;
-      })
-    );
+    return {
+      id: info.id,
+      row: info.row,
+      column: info.column,
+      side: info.side,
+      position: info.position,
+      status: 'available',
+      price: info.defaultPrice || SEED_TICKET.price || 850,
+    } satisfies QuickSeat;
   });
 }
 
@@ -1276,6 +1271,7 @@ function seatAt(seats: QuickSeat[], id: string) {
 }
 
 function QuickDeckBoard({
+  layout,
   deck,
   showLabel,
   seats,
@@ -1283,6 +1279,7 @@ function QuickDeckBoard({
   readOnly,
   onSelect,
 }: {
+  layout: LayoutConfig;
   deck: DeckConfig;
   showLabel: boolean;
   seats: QuickSeat[];
@@ -1290,6 +1287,17 @@ function QuickDeckBoard({
   readOnly: boolean;
   onSelect: (seat: QuickSeat) => void;
 }) {
+  const format = getSeatIdFormat(layout);
+  const endCapOrder = layout.endCapOrder ?? 'driver-door';
+  const showEndCaps = deck.id === 'lower';
+  const frontSeats = showEndCaps ? layout.frontSeats ?? [] : [];
+  const leftFront = frontSeats.filter((seat) => seat.side === 'Left');
+  const rightFront = frontSeats.filter((seat) => seat.side === 'Right');
+  const leftWidth = Math.max(deck.left.length, 1) * 48 + Math.max(deck.left.length - 1, 0) * 8;
+  const rightWidth = Math.max(deck.right.length, 1) * 48 + Math.max(deck.right.length - 1, 0) * 8;
+  const hasSideBlocks = showEndCaps && !!layout.sideBlocks?.length;
+  const skippedRows = new Set<number>();
+
   return (
     <Stack spacing={1}>
       {showLabel && (
@@ -1298,50 +1306,250 @@ function QuickDeckBoard({
         </Typography>
       )}
 
-      {deck.id === 'lower' && (
-        <Stack direction="row" justifyContent="space-between" sx={{ mb: 1 }}>
-          <EndCap icon={DRIVER_ICON} label="Driver" />
-          <EndCap icon={DOOR_ICON} label="Door" />
+      {showEndCaps && layout.showEngine && (
+        <Stack alignItems="center" spacing={0.25} sx={{ mb: 0.5 }}>
+          <Iconify icon={ENGINE_ICON} width={22} sx={{ color: 'error.main' }} />
+          <Typography variant="caption" sx={{ color: 'error.main', fontWeight: 800, letterSpacing: 1 }}>
+            ENGINE
+          </Typography>
+        </Stack>
+      )}
+
+      {showEndCaps && endCapOrder === 'driver-only' && !hasSideBlocks && (
+        <Stack direction="row" spacing={1} justifyContent="center" sx={{ mb: 0.5 }}>
+          <Box sx={{ width: leftWidth }} />
+          <Box sx={{ width: 36 }} />
+          <Box sx={{ width: rightWidth, display: 'flex', justifyContent: 'flex-end' }}>
+            <EndCap icon={DRIVER_ICON} label="Driver" size={48} iconSize={32} />
+          </Box>
+        </Stack>
+      )}
+
+      {showEndCaps && endCapOrder !== 'driver-only' && !hasSideBlocks && (
+        <Stack direction="row" justifyContent="space-between" sx={{ mb: 0.5 }}>
+          {endCapOrder === 'door-driver' ? (
+            <>
+              <EndCap icon={DOOR_ICON} label="Door" />
+              <EndCap icon={DRIVER_ICON} label="Driver" />
+            </>
+          ) : (
+            <>
+              <EndCap icon={DRIVER_ICON} label="Driver" />
+              <EndCap icon={DOOR_ICON} label="Door" />
+            </>
+          )}
+        </Stack>
+      )}
+
+      {!!frontSeats.length && (
+        <Stack direction="row" spacing={1} alignItems="center" justifyContent="center">
+          <Box
+            sx={{
+              width: leftWidth,
+              display: 'flex',
+              justifyContent: leftFront.length ? 'flex-start' : 'center',
+              gap: 1,
+            }}
+          >
+            {leftFront.map((seat) => (
+              <SeatButton
+                key={seat.id}
+                seat={seatAt(seats, seat.id)}
+                selected={selectedIds.includes(seat.id)}
+                readOnly={readOnly}
+                onSelect={onSelect}
+              />
+            ))}
+          </Box>
+          <Box sx={{ width: 36 }} />
+          <Box
+            sx={{
+              width: rightWidth,
+              display: 'flex',
+              justifyContent: rightFront.length ? 'flex-end' : 'center',
+              gap: 1,
+            }}
+          >
+            {rightFront.map((seat) => (
+              <SeatButton
+                key={seat.id}
+                seat={seatAt(seats, seat.id)}
+                selected={selectedIds.includes(seat.id)}
+                readOnly={readOnly}
+                onSelect={onSelect}
+              />
+            ))}
+          </Box>
         </Stack>
       )}
 
       <Stack spacing={1}>
-        {Array.from({ length: deck.rows }, (_, index) => index + 1).map((row) => (
-          <Stack key={row} direction="row" spacing={1} alignItems="center" justifyContent="center">
-            {deck.left.map((column) => {
-              const id = seatIdForDeck(deck, column, row);
-              return (
-                <SeatButton
-                  key={id}
-                  seat={seatAt(seats, id)}
-                  selected={selectedIds.includes(id)}
-                  readOnly={readOnly}
-                  onSelect={onSelect}
-                />
-              );
-            })}
-            <Typography
-              variant="caption"
-              sx={{ width: 36, textAlign: 'center', color: 'text.disabled', fontWeight: 600 }}
-            >
-              {row === 1 ? 'Aisle' : ''}
-            </Typography>
-            {deck.right.map((column) => {
-              const id = seatIdForDeck(deck, column, row);
-              return (
-                <SeatButton
-                  key={id}
-                  seat={seatAt(seats, id)}
-                  selected={selectedIds.includes(id)}
-                  readOnly={readOnly}
-                  onSelect={onSelect}
-                />
-              );
-            })}
-          </Stack>
-        ))}
+        {Array.from({ length: deck.rows }, (_, index) => index + 1).map((row) => {
+          if (skippedRows.has(row)) {
+            return null;
+          }
+
+          const leftStart = showEndCaps ? getSideBlockAtRow(layout, 'Left', row) : null;
+          const rightStart = showEndCaps ? getSideBlockAtRow(layout, 'Right', row) : null;
+
+          if (leftStart || rightStart) {
+            const spanRows = [
+              ...new Set([...(leftStart?.rows ?? [row]), ...(rightStart?.rows ?? [row])]),
+            ].sort((a, b) => a - b);
+
+            spanRows.forEach((spanRow) => {
+              if (spanRow !== row) {
+                skippedRows.add(spanRow);
+              }
+            });
+
+            return (
+              <Stack key={`block-${row}`} direction="row" spacing={1} alignItems="stretch" justifyContent="center">
+                {leftStart ? (
+                  <QuickSideFeatureBlock kind={leftStart.kind} rows={leftStart.rows.length} width={leftWidth} />
+                ) : (
+                  <Stack spacing={1}>
+                    {spanRows.map((spanRow) => (
+                      <Stack key={spanRow} direction="row" spacing={1}>
+                        {deck.left.map((column) => {
+                          if (isSeatBlockedBySideBlock(layout, deck, column, spanRow)) {
+                            return null;
+                          }
+                          const id = seatIdForDeck(deck, column, spanRow, format);
+                          return (
+                            <SeatButton
+                              key={id}
+                              seat={seatAt(seats, id)}
+                              selected={selectedIds.includes(id)}
+                              readOnly={readOnly}
+                              onSelect={onSelect}
+                            />
+                          );
+                        })}
+                      </Stack>
+                    ))}
+                  </Stack>
+                )}
+
+                <Stack spacing={1} justifyContent="center">
+                  {spanRows.map((spanRow) => (
+                    <Box key={`aisle-${spanRow}`} sx={{ width: 36, height: 36 }} />
+                  ))}
+                </Stack>
+
+                {rightStart ? (
+                  <QuickSideFeatureBlock kind={rightStart.kind} rows={rightStart.rows.length} width={rightWidth} />
+                ) : (
+                  <Stack spacing={1}>
+                    {spanRows.map((spanRow) => (
+                      <Stack key={spanRow} direction="row" spacing={1}>
+                        {deck.right.map((column) => {
+                          if (isSeatBlockedBySideBlock(layout, deck, column, spanRow)) {
+                            return null;
+                          }
+                          const id = seatIdForDeck(deck, column, spanRow, format);
+                          return (
+                            <SeatButton
+                              key={id}
+                              seat={seatAt(seats, id)}
+                              selected={selectedIds.includes(id)}
+                              readOnly={readOnly}
+                              onSelect={onSelect}
+                            />
+                          );
+                        })}
+                      </Stack>
+                    ))}
+                  </Stack>
+                )}
+              </Stack>
+            );
+          }
+
+          return (
+            <Stack key={row} direction="row" spacing={1} alignItems="center" justifyContent="center">
+              {deck.left.map((column) => {
+                const id = seatIdForDeck(deck, column, row, format);
+                return (
+                  <SeatButton
+                    key={id}
+                    seat={seatAt(seats, id)}
+                    selected={selectedIds.includes(id)}
+                    readOnly={readOnly}
+                    onSelect={onSelect}
+                  />
+                );
+              })}
+              <Typography
+                variant="caption"
+                sx={{
+                  width: 36,
+                  textAlign: 'center',
+                  color: 'text.disabled',
+                  fontWeight: 700,
+                }}
+              >
+                {aisleLabelForRow(layout, row)}
+              </Typography>
+              {deck.right.map((column) => {
+                const id = seatIdForDeck(deck, column, row, format);
+                return (
+                  <SeatButton
+                    key={id}
+                    seat={seatAt(seats, id)}
+                    selected={selectedIds.includes(id)}
+                    readOnly={readOnly}
+                    onSelect={onSelect}
+                  />
+                );
+              })}
+            </Stack>
+          );
+        })}
       </Stack>
     </Stack>
+  );
+}
+
+function QuickSideFeatureBlock({
+  kind,
+  rows,
+  width,
+}: {
+  kind: SideBlockKind;
+  rows: number;
+  width: number;
+}) {
+  const height = rows * 36 + Math.max(rows - 1, 0) * 8;
+  const isDoor = kind === 'door';
+
+  return (
+    <Tooltip title={isDoor ? 'Door' : 'Driver'} arrow placement="left">
+      <Box
+        aria-label={isDoor ? 'Door' : 'Driver'}
+        sx={{
+          width,
+          height,
+          borderRadius: 1,
+          display: 'inline-flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 0.5,
+          color: isDoor ? 'primary.dark' : 'text.secondary',
+          bgcolor: isDoor ? 'primary.lighter' : 'action.hover',
+          border: (theme) =>
+            `solid 1px ${isDoor ? theme.palette.primary.main : theme.palette.divider}`,
+        }}
+      >
+        <Iconify icon={isDoor ? DOOR_ICON : DRIVER_ICON} width={isDoor ? 26 : 32} />
+        {isDoor && (
+          <Typography variant="caption" sx={{ fontWeight: 800, letterSpacing: 0.6 }}>
+            DOOR
+          </Typography>
+        )}
+      </Box>
+    </Tooltip>
   );
 }
 
@@ -1362,14 +1570,24 @@ function FieldIcon({ icon }: { icon: string }) {
   );
 }
 
-function EndCap({ icon, label }: { icon: string; label: string }) {
+function EndCap({
+  icon,
+  label,
+  size = 36,
+  iconSize = 20,
+}: {
+  icon: string;
+  label: string;
+  size?: number;
+  iconSize?: number;
+}) {
   return (
     <Tooltip title={label} arrow placement="top">
       <Box
         aria-label={label}
         sx={{
-          width: 36,
-          height: 36,
+          width: size,
+          height: size,
           borderRadius: 1,
           display: 'inline-flex',
           alignItems: 'center',
@@ -1378,7 +1596,7 @@ function EndCap({ icon, label }: { icon: string; label: string }) {
           bgcolor: 'action.hover',
         }}
       >
-        <Iconify icon={icon} width={20} />
+        <Iconify icon={icon} width={iconSize} />
       </Box>
     </Tooltip>
   );

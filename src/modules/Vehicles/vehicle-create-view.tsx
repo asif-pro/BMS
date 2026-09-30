@@ -537,7 +537,8 @@ function FieldIcon({ icon }: { icon: string }) {
 
 function LayoutPreview({ layout }: { layout: LayoutConfig }) {
   const seatCount = layoutSeatCount(layout);
-  const previewScale = layout.id === 'double-decker' ? 0.32 : layout.id === '1+1' ? 0.55 : 0.4;
+  const previewScale =
+    layout.id === 'double-decker' ? 0.32 : layout.id === '1+1' ? 0.55 : layout.id === '2+2-classic' ? 0.36 : 0.4;
 
   return (
     <Card sx={{ p: 2 }}>

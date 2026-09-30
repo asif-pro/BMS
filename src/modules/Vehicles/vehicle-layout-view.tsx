@@ -63,7 +63,8 @@ export default function VehicleLayoutView() {
 
 function LayoutCard({ layout }: { layout: LayoutConfig }) {
   const seatCount = layoutSeatCount(layout);
-  const previewScale = layout.id === 'double-decker' ? 0.4 : layout.id === '1+1' ? 0.7 : 0.52;
+  const previewScale =
+    layout.id === 'double-decker' ? 0.4 : layout.id === '1+1' ? 0.7 : layout.id === '2+2-classic' ? 0.46 : 0.52;
 
   return (
     <Link
