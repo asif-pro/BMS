@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type ChangeEvent, type ReactNode } from '
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
+import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
@@ -84,19 +85,29 @@ export default function QuickTicketView() {
   const [to, setTo] = useState<string | null>(SEED_TICKET.destination);
   const [layoutId, setLayoutId] = useState<LayoutId | null>(null);
   const [seats, setSeats] = useState<QuickSeat[]>([]);
-  const [actionSeatId, setActionSeatId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [purchaseOpen, setPurchaseOpen] = useState(false);
   const [holdOpen, setHoldOpen] = useState(false);
   const [formLocked, setFormLocked] = useState(false);
   const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
 
   const layout = SEAT_LAYOUTS.find((item) => item.id === layoutId) ?? null;
-  const actionSeat = useMemo(
-    () => seats.find((seat) => seat.id === actionSeatId) ?? null,
-    [actionSeatId, seats]
+  const selectedSeats = useMemo(
+    () =>
+      selectedIds
+        .map((id) => seats.find((seat) => seat.id === id))
+        .filter((seat): seat is QuickSeat => !!seat && seat.status === 'available'),
+    [selectedIds, seats]
   );
 
   const soldCount = seats.filter((seat) => seat.status === 'booked').length;
   const remainingCount = seats.filter((seat) => seat.status === 'available').length;
+
+  const clearSelection = () => {
+    setSelectedIds([]);
+    setPurchaseOpen(false);
+    setHoldOpen(false);
+  };
 
   const handleRefresh = () => {
     if (!layoutId) {
@@ -104,18 +115,20 @@ export default function QuickTicketView() {
     }
 
     setSeats(seedSeatsForLayout(layoutId));
-    setActionSeatId(null);
-    setHoldOpen(false);
+    clearSelection();
   };
 
   const handleLayoutChange = (nextLayout: LayoutId) => {
     setLayoutId(nextLayout);
     setSeats(seedSeatsForLayout(nextLayout));
-    setActionSeatId(null);
-    setHoldOpen(false);
+    clearSelection();
   };
 
   const handleCreateTrip = () => {
+    if (!layoutId) {
+      return;
+    }
+
     setFormLocked(true);
   };
 
@@ -131,8 +144,7 @@ export default function QuickTicketView() {
     setTo(null);
     setLayoutId(null);
     setSeats([]);
-    setActionSeatId(null);
-    setHoldOpen(false);
+    clearSelection();
     setFormLocked(false);
     setCancelConfirmOpen(false);
   };
@@ -143,43 +155,53 @@ export default function QuickTicketView() {
     }
 
     setHoldOpen(false);
-    setActionSeatId(seat.id);
+    setPurchaseOpen(false);
+    setSelectedIds((current) =>
+      current.includes(seat.id) ? current.filter((id) => id !== seat.id) : [...current, seat.id]
+    );
   };
 
-  const handlePurchase = (price: number) => {
-    if (!actionSeatId) {
+  const handlePurchase = (pricedSeats: { id: string; price: number }[]) => {
+    if (!pricedSeats.length) {
       return;
     }
 
+    const priceById = new Map(pricedSeats.map((item) => [item.id, item.price]));
+
     setSeats((current) =>
-      current.map((seat) =>
-        seat.id === actionSeatId
-          ? {
-              ...seat,
-              status: 'booked',
-              price,
-              bookedBy: user.displayName,
-              bookedAt: new Date(),
-              bookingTerminal: from || 'Counter desk',
-              holdBy: undefined,
-              holdByAvatar: undefined,
-              holdNote: undefined,
-              heldAt: undefined,
-            }
-          : seat
-      )
+      current.map((seat) => {
+        const price = priceById.get(seat.id);
+        if (price === undefined) {
+          return seat;
+        }
+
+        return {
+          ...seat,
+          status: 'booked',
+          price,
+          bookedBy: user.displayName,
+          bookedAt: new Date(),
+          bookingTerminal: from || 'Counter desk',
+          holdBy: undefined,
+          holdByAvatar: undefined,
+          holdNote: undefined,
+          heldAt: undefined,
+        };
+      })
     );
-    setActionSeatId(null);
+    clearSelection();
   };
 
   const handleHold = (note: string) => {
-    if (!actionSeatId) {
+    if (!selectedSeats.length) {
       return;
     }
 
+    const holdIds = new Set(selectedSeats.map((seat) => seat.id));
+
     setSeats((current) =>
       current.map((seat) =>
-        seat.id === actionSeatId
+        holdIds.has(seat.id)
           ? {
               ...seat,
               status: 'held',
@@ -191,8 +213,7 @@ export default function QuickTicketView() {
           : seat
       )
     );
-    setHoldOpen(false);
-    setActionSeatId(null);
+    clearSelection();
   };
 
   return (
@@ -213,6 +234,7 @@ export default function QuickTicketView() {
             <Typography variant="h6">Seat layout</Typography>
             <TextField
               select
+              required
               fullWidth
               size="small"
               label="Layout"
@@ -409,6 +431,7 @@ export default function QuickTicketView() {
               <Button
                 size="large"
                 variant="contained"
+                disabled={!layoutId}
                 startIcon={<Iconify icon="mingcute:add-line" />}
                 onClick={handleCreateTrip}
               >
@@ -422,26 +445,35 @@ export default function QuickTicketView() {
           <QuickSeatMap
             layout={layout}
             seats={seats}
+            selectedIds={selectedIds}
             soldCount={soldCount}
             remainingCount={remainingCount}
             readOnly={!formLocked}
             onSelect={handleSeatClick}
             onRefresh={handleRefresh}
+            onClearSelection={clearSelection}
+            onOpenPurchase={() => {
+              setHoldOpen(false);
+              setPurchaseOpen(true);
+            }}
+            onOpenHold={() => {
+              setPurchaseOpen(false);
+              setHoldOpen(true);
+            }}
           />
         )}
       </Stack>
 
       <PurchaseDialog
-        open={!!actionSeat && !holdOpen}
-        seat={actionSeat}
-        onClose={() => setActionSeatId(null)}
+        open={purchaseOpen && selectedSeats.length > 0 && !holdOpen}
+        seats={selectedSeats}
+        onClose={() => setPurchaseOpen(false)}
         onPurchase={handlePurchase}
-        onHold={() => setHoldOpen(true)}
       />
 
       <HoldDialog
-        open={holdOpen && !!actionSeat}
-        seatId={actionSeat?.id ?? ''}
+        open={holdOpen && selectedSeats.length > 0}
+        seatIds={selectedSeats.map((seat) => seat.id)}
         onClose={() => setHoldOpen(false)}
         onHold={handleHold}
       />
@@ -481,131 +513,257 @@ export default function QuickTicketView() {
 function QuickSeatMap({
   layout,
   seats,
+  selectedIds,
   soldCount,
   remainingCount,
   readOnly,
   onSelect,
   onRefresh,
+  onClearSelection,
+  onOpenPurchase,
+  onOpenHold,
 }: {
   layout: LayoutConfig;
   seats: QuickSeat[];
+  selectedIds: string[];
   soldCount: number;
   remainingCount: number;
   readOnly: boolean;
   onSelect: (seat: QuickSeat) => void;
   onRefresh: () => void;
+  onClearSelection: () => void;
+  onOpenPurchase: () => void;
+  onOpenHold: () => void;
 }) {
   const decks = getLayoutDecks(layout);
   const multiDeck = decks.length > 1;
+  const selectedSeats = selectedIds
+    .map((id) => seats.find((seat) => seat.id === id))
+    .filter((seat): seat is QuickSeat => !!seat);
+  const selectedTotal = selectedSeats.reduce((sum, seat) => sum + seat.price, 0);
 
   return (
-    <Card sx={{ p: 3, position: 'relative', overflow: 'hidden' }}>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
-        <Box>
-          <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
-            {layout.caption}
-          </Typography>
-          <Typography variant="h6">{layout.label}</Typography>
+    <Box
+      sx={{
+        position: 'relative',
+        display: 'grid',
+        gap: 3,
+        alignItems: 'center',
+        gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 1fr) 320px' },
+      }}
+    >
+      <Card sx={{ p: 3, position: 'relative', overflow: 'hidden' }}>
+        <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+          <Box>
+            <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
+              {layout.caption}
+            </Typography>
+            <Typography variant="h6">{layout.label}</Typography>
+          </Box>
+
+          <IconButton aria-label="Refresh" disabled={readOnly} onClick={onRefresh}>
+            <Iconify icon="solar:restart-bold" />
+          </IconButton>
+        </Stack>
+
+        <Stack
+          direction="row"
+          spacing={1.5}
+          justifyContent="center"
+          flexWrap="wrap"
+          useFlexGap
+          sx={{ mb: 2.5 }}
+        >
+          <StatChip
+            icon="solar:ticket-bold"
+            color="warning.main"
+            label="Sold"
+            value={String(soldCount)}
+          />
+          <StatChip
+            icon="solar:users-group-rounded-bold"
+            color="success.main"
+            label="Remaining"
+            value={String(remainingCount)}
+          />
+        </Stack>
+
+        <Stack direction="row" spacing={2} sx={{ mb: 2 }} justifyContent="center" flexWrap="wrap" useFlexGap>
+          <Legend swatch="background.paper" label="Available" />
+          <Legend swatch="primary.main" label="Selected" />
+          <Legend swatch="action.hover" label="Booked" />
+          <Legend swatch="warning.main" label="Held" />
+        </Stack>
+
+        <Box
+          sx={{
+            maxWidth: layout.id === '1+1' ? 280 : 420,
+            mx: 'auto',
+            p: 2,
+            borderRadius: 2,
+            border: (theme) => `solid 1px ${theme.palette.divider}`,
+          }}
+        >
+          <Stack spacing={multiDeck ? 2.5 : 0}>
+            {decks.map((deck) => (
+              <QuickDeckBoard
+                key={deck.id}
+                deck={deck}
+                showLabel={multiDeck}
+                seats={seats}
+                selectedIds={selectedIds}
+                readOnly={readOnly}
+                onSelect={onSelect}
+              />
+            ))}
+          </Stack>
         </Box>
 
-        <IconButton aria-label="Refresh" disabled={readOnly} onClick={onRefresh}>
-          <Iconify icon="solar:restart-bold" />
-        </IconButton>
-      </Stack>
+        <Typography variant="caption" sx={{ display: 'block', mt: 2, color: 'text.secondary', fontWeight: 600 }}>
+          {readOnly
+            ? 'Preview only. Create the trip to book or hold seats.'
+            : 'Click available seats to select one or more. Then purchase or hold them together.'}
+        </Typography>
 
-      <Stack
-        direction="row"
-        spacing={1.5}
-        justifyContent="center"
-        flexWrap="wrap"
-        useFlexGap
-        sx={{ mb: 2.5 }}
-      >
-        <StatChip
-          icon="solar:ticket-bold"
-          color="warning.main"
-          label="Sold"
-          value={String(soldCount)}
-        />
-        <StatChip
-          icon="solar:users-group-rounded-bold"
-          color="success.main"
-          label="Remaining"
-          value={String(remainingCount)}
-        />
-      </Stack>
+        {readOnly && (
+          <Box
+            aria-hidden
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              zIndex: 2,
+              borderRadius: 'inherit',
+              bgcolor: (theme) =>
+                theme.palette.mode === 'dark' ? 'rgba(22, 28, 36, 0.45)' : 'rgba(255, 255, 255, 0.55)',
+              backdropFilter: 'blur(0.5px)',
+            }}
+          />
+        )}
+      </Card>
 
-      <Stack direction="row" spacing={2} sx={{ mb: 2 }} justifyContent="center" flexWrap="wrap" useFlexGap>
-        <Legend swatch="background.paper" label="Available" />
-        <Legend swatch="action.hover" label="Booked" />
-        <Legend swatch="warning.main" label="Held" />
-      </Stack>
-
-      <Box
+      <Card
         sx={{
-          maxWidth: layout.id === '1+1' ? 280 : 420,
-          mx: 'auto',
-          p: 2,
-          borderRadius: 2,
-          border: (theme) => `solid 1px ${theme.palette.divider}`,
+          p: 3,
+          opacity: readOnly ? 0.55 : 1,
+          pointerEvents: readOnly ? 'none' : 'auto',
+          borderRadius: 2.5,
+          border: 'none',
+          boxShadow: (theme) =>
+            theme.palette.mode === 'dark'
+              ? '0 12px 40px -8px rgba(0, 0, 0, 0.55), 0 4px 12px rgba(0, 0, 0, 0.35)'
+              : '0 16px 40px -12px rgba(145, 158, 171, 0.36), 0 8px 16px -8px rgba(145, 158, 171, 0.24)',
+          transform: { md: 'translateY(-4px)' },
         }}
       >
-        <Stack spacing={multiDeck ? 2.5 : 0}>
-          {decks.map((deck) => (
-            <QuickDeckBoard
-              key={deck.id}
-              deck={deck}
-              showLabel={multiDeck}
-              seats={seats}
-              readOnly={readOnly}
-              onSelect={onSelect}
-            />
-          ))}
+        <Stack spacing={2}>
+          <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1}>
+            <Typography variant="h6">
+              {selectedSeats.length
+                ? `${selectedSeats.length} seat${selectedSeats.length > 1 ? 's' : ''} selected`
+                : 'Selected seats'}
+            </Typography>
+            {!selectedSeats.length && (
+              <Typography variant="caption" sx={{ color: 'text.disabled', fontWeight: 600 }}>
+                Select seats
+              </Typography>
+            )}
+          </Stack>
+
+          {selectedSeats.length ? (
+            <>
+              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                {selectedSeats.map((seat) => (
+                  <Chip
+                    key={seat.id}
+                    size="small"
+                    label={seat.id}
+                    color="primary"
+                    variant="outlined"
+                    onDelete={() => onSelect(seat)}
+                  />
+                ))}
+              </Stack>
+
+              <Box
+                sx={{
+                  p: 2,
+                  borderRadius: 2,
+                  bgcolor: 'background.neutral',
+                  textAlign: 'center',
+                }}
+              >
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
+                  Total
+                </Typography>
+                <Typography variant="h4" sx={{ color: 'success.main', mt: 0.5 }}>
+                  ৳{selectedTotal.toLocaleString('en-BD')}
+                </Typography>
+              </Box>
+
+              <Stack spacing={1}>
+                <Button
+                  fullWidth
+                  variant="contained"
+                  color="success"
+                  onClick={onOpenPurchase}
+                  startIcon={<Iconify icon="solar:ticket-bold" />}
+                  sx={{ fontWeight: 700 }}
+                >
+                  Purchase
+                </Button>
+                <Button
+                  fullWidth
+                  variant="contained"
+                  color="warning"
+                  onClick={onOpenHold}
+                  startIcon={<Iconify icon="solar:hourglass-bold" />}
+                  sx={{ fontWeight: 700 }}
+                >
+                  Hold
+                </Button>
+                <Button
+                  fullWidth
+                  color="inherit"
+                  variant="outlined"
+                  onClick={onClearSelection}
+                  startIcon={<Iconify icon="mingcute:close-line" />}
+                >
+                  Clear
+                </Button>
+              </Stack>
+            </>
+          ) : (
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+              Click seats on the layout to select them for purchase or hold.
+            </Typography>
+          )}
         </Stack>
-      </Box>
-
-      <Typography variant="caption" sx={{ display: 'block', mt: 2, color: 'text.secondary', fontWeight: 600 }}>
-        {readOnly
-          ? 'Preview only. Create the trip to book or hold seats.'
-          : 'Hover a booked or held seat for details. Click an available seat to purchase or hold.'}
-      </Typography>
-
-      {readOnly && (
-        <Box
-          aria-hidden
-          sx={{
-            position: 'absolute',
-            inset: 0,
-            zIndex: 2,
-            borderRadius: 'inherit',
-            bgcolor: (theme) =>
-              theme.palette.mode === 'dark' ? 'rgba(22, 28, 36, 0.45)' : 'rgba(255, 255, 255, 0.55)',
-            backdropFilter: 'blur(0.5px)',
-          }}
-        />
-      )}
-    </Card>
+      </Card>
+    </Box>
   );
 }
 
 function SeatButton({
   seat,
+  selected,
   readOnly,
   onSelect,
 }: {
   seat: QuickSeat;
+  selected?: boolean;
   readOnly?: boolean;
   onSelect: (seat: QuickSeat) => void;
 }) {
   const booked = seat.status === 'booked';
   const held = seat.status === 'held';
-  const locked = booked || !!readOnly;
+  const locked = booked || held || !!readOnly;
 
   const button = (
     <Box
       component="button"
       type="button"
       aria-disabled={locked}
+      aria-pressed={selected}
       onClick={() => {
         if (!locked) {
           onSelect(seat);
@@ -618,12 +776,30 @@ function SeatButton({
         borderRadius: 1,
         typography: 'caption',
         fontWeight: 700,
-        cursor: locked || held ? 'default' : 'pointer',
+        cursor: locked ? 'default' : 'pointer',
         pointerEvents: readOnly ? 'none' : 'auto',
         border: (theme) =>
-          `solid 1px ${held ? theme.palette.warning.main : theme.palette.divider}`,
-        bgcolor: held ? 'warning.main' : booked ? 'action.hover' : 'background.paper',
-        color: held ? 'warning.contrastText' : booked ? 'text.disabled' : 'text.primary',
+          `solid 1px ${
+            held
+              ? theme.palette.warning.main
+              : selected
+                ? theme.palette.primary.main
+                : theme.palette.divider
+          }`,
+        bgcolor: held
+          ? 'warning.main'
+          : booked
+            ? 'action.hover'
+            : selected
+              ? 'primary.main'
+              : 'background.paper',
+        color: held
+          ? 'warning.contrastText'
+          : booked
+            ? 'text.disabled'
+            : selected
+              ? 'primary.contrastText'
+              : 'text.primary',
         opacity: booked ? 0.85 : 1,
       }}
     >
@@ -715,24 +891,24 @@ function SeatHoverCard({ seat }: { seat: QuickSeat }) {
 
 function PurchaseDialog({
   open,
-  seat,
+  seats,
   onClose,
   onPurchase,
-  onHold,
 }: {
   open: boolean;
-  seat: QuickSeat | null;
+  seats: QuickSeat[];
   onClose: () => void;
-  onPurchase: (price: number) => void;
-  onHold: () => void;
+  onPurchase: (pricedSeats: { id: string; price: number }[]) => void;
 }) {
   const [discountEnabled, setDiscountEnabled] = useState(false);
   const [discount, setDiscount] = useState('');
   const [discountMode, setDiscountMode] = useState<DiscountMode>('percent');
-  const seatPrice = seat?.price ?? 0;
-  const totalPrice = discountEnabled
-    ? discountTotal(seatPrice, discount, discountMode)
-    : seatPrice;
+  const seatKey = seats.map((seat) => seat.id).join(',');
+  const pricedSeats = discountEnabled
+    ? applySeatDiscounts(seats, discount, discountMode)
+    : seats.map((seat) => ({ id: seat.id, price: seat.price }));
+  const totalPrice = pricedSeats.reduce((sum, seat) => sum + seat.price, 0);
+  const seatLabel = seats.length === 1 ? seats[0]?.id : `${seats.length} seats`;
 
   useEffect(() => {
     if (open) {
@@ -740,11 +916,13 @@ function PurchaseDialog({
       setDiscount('');
       setDiscountMode('percent');
     }
-  }, [open, seat?.id]);
+  }, [open, seatKey]);
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
-      <DialogTitle sx={{ pb: 1 }}>Confirm seat</DialogTitle>
+      <DialogTitle sx={{ pb: 1 }}>
+        {seats.length > 1 ? 'Confirm seats' : 'Confirm seat'}
+      </DialogTitle>
       <DialogContent>
         <Stack spacing={2.5} sx={{ pt: 0.5 }}>
           <Box
@@ -756,11 +934,16 @@ function PurchaseDialog({
             }}
           >
             <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
-              Seat
+              {seats.length > 1 ? 'Seats' : 'Seat'}
             </Typography>
             <Typography variant="h3" sx={{ my: 0.5 }}>
-              {seat?.id}
+              {seatLabel}
             </Typography>
+            {seats.length > 1 && (
+              <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1, px: 1 }}>
+                {seats.map((seat) => seat.id).join(', ')}
+              </Typography>
+            )}
             <Stack direction="row" spacing={1} justifyContent="center" alignItems="center">
               <Iconify icon="solar:tag-price-bold" width={22} sx={{ color: 'success.main' }} />
               <Typography variant="h4" sx={{ color: 'success.main' }}>
@@ -846,7 +1029,7 @@ function PurchaseDialog({
           )}
 
           <Typography variant="body2" sx={{ color: 'text.secondary', textAlign: 'center' }}>
-            Purchase this seat now, or hold it for a passenger.
+            {seats.length > 1 ? 'Purchase these seats now.' : 'Purchase this seat now.'}
           </Typography>
         </Stack>
       </DialogContent>
@@ -862,17 +1045,8 @@ function PurchaseDialog({
         <Box sx={{ flexGrow: 1 }} />
         <Button
           variant="contained"
-          color="warning"
-          onClick={onHold}
-          startIcon={<Iconify icon="solar:hourglass-bold" />}
-          sx={{ fontWeight: 700 }}
-        >
-          Hold
-        </Button>
-        <Button
-          variant="contained"
           color="success"
-          onClick={() => onPurchase(totalPrice)}
+          onClick={() => onPurchase(pricedSeats)}
           startIcon={<Iconify icon="solar:ticket-bold" />}
           sx={{ fontWeight: 700 }}
         >
@@ -893,19 +1067,47 @@ function discountTotal(price: number, discount: string, mode: DiscountMode) {
   return Math.max(0, Math.round(price - off));
 }
 
+function applySeatDiscounts(seats: QuickSeat[], discount: string, mode: DiscountMode) {
+  if (mode === 'percent') {
+    return seats.map((seat) => ({
+      id: seat.id,
+      price: discountTotal(seat.price, discount, 'percent'),
+    }));
+  }
+
+  const subtotal = seats.reduce((sum, seat) => sum + seat.price, 0);
+  const discountedTotal = discountTotal(subtotal, discount, 'amount');
+  if (!seats.length || subtotal <= 0) {
+    return seats.map((seat) => ({ id: seat.id, price: seat.price }));
+  }
+
+  let remaining = discountedTotal;
+  return seats.map((seat, index) => {
+    if (index === seats.length - 1) {
+      return { id: seat.id, price: remaining };
+    }
+
+    const share = Math.round((seat.price / subtotal) * discountedTotal);
+    remaining -= share;
+    return { id: seat.id, price: share };
+  });
+}
+
 function HoldDialog({
   open,
-  seatId,
+  seatIds,
   onClose,
   onHold,
 }: {
   open: boolean;
-  seatId: string;
+  seatIds: string[];
   onClose: () => void;
   onHold: (note: string) => void;
 }) {
   const { user } = useMockedUser();
   const [note, setNote] = useState('');
+  const title =
+    seatIds.length > 1 ? `Hold ${seatIds.length} seats` : `Hold seat ${seatIds[0] ?? ''}`;
 
   useEffect(() => {
     if (open) {
@@ -915,9 +1117,14 @@ function HoldDialog({
 
   return (
     <Dialog fullWidth maxWidth="sm" open={open} onClose={onClose}>
-      <DialogTitle>Hold seat {seatId}</DialogTitle>
+      <DialogTitle>{title}</DialogTitle>
       <DialogContent>
         <Stack spacing={2.5} sx={{ pt: 1 }}>
+          {seatIds.length > 1 && (
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+              Seats: {seatIds.join(', ')}
+            </Typography>
+          )}
           <TextField
             fullWidth
             label="Held by"
@@ -1072,12 +1279,14 @@ function QuickDeckBoard({
   deck,
   showLabel,
   seats,
+  selectedIds,
   readOnly,
   onSelect,
 }: {
   deck: DeckConfig;
   showLabel: boolean;
   seats: QuickSeat[];
+  selectedIds: string[];
   readOnly: boolean;
   onSelect: (seat: QuickSeat) => void;
 }) {
@@ -1102,7 +1311,13 @@ function QuickDeckBoard({
             {deck.left.map((column) => {
               const id = seatIdForDeck(deck, column, row);
               return (
-                <SeatButton key={id} seat={seatAt(seats, id)} readOnly={readOnly} onSelect={onSelect} />
+                <SeatButton
+                  key={id}
+                  seat={seatAt(seats, id)}
+                  selected={selectedIds.includes(id)}
+                  readOnly={readOnly}
+                  onSelect={onSelect}
+                />
               );
             })}
             <Typography
@@ -1114,7 +1329,13 @@ function QuickDeckBoard({
             {deck.right.map((column) => {
               const id = seatIdForDeck(deck, column, row);
               return (
-                <SeatButton key={id} seat={seatAt(seats, id)} readOnly={readOnly} onSelect={onSelect} />
+                <SeatButton
+                  key={id}
+                  seat={seatAt(seats, id)}
+                  selected={selectedIds.includes(id)}
+                  readOnly={readOnly}
+                  onSelect={onSelect}
+                />
               );
             })}
           </Stack>

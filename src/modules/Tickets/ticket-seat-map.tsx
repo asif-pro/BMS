@@ -1,7 +1,8 @@
-import { useEffect, useState, type ChangeEvent } from 'react';
+import { useEffect, useMemo, useState, type ChangeEvent } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
+import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
@@ -60,11 +61,56 @@ type Props = {
 
 export default function TicketSeatMap({ ticket }: Props) {
   const [seats, setSeats] = useState(ticket.seats);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [buyOpen, setBuyOpen] = useState(false);
   const [holdOpen, setHoldOpen] = useState(false);
-  const selected = seats.find((seat) => seat.id === selectedId);
+
+  const selectedSeats = useMemo(
+    () =>
+      selectedIds
+        .map((id) => seats.find((seat) => seat.id === id))
+        .filter((seat): seat is TicketSeat => !!seat),
+    [selectedIds, seats]
+  );
+  const selected = selectedSeats.length === 1 ? selectedSeats[0] : null;
+  const multiAvailable =
+    selectedSeats.length > 1 && selectedSeats.every((seat) => seat.status === 'available');
+  const actionableSeats = multiAvailable
+    ? selectedSeats
+    : selected?.status === 'available'
+      ? [selected]
+      : [];
+  const selectedTotal = actionableSeats.reduce((sum, seat) => sum + seat.price, 0);
   const boardingOptions = [ticket.origin, ...ticket.stops];
+
+  const clearSelection = () => {
+    setSelectedIds([]);
+    setBuyOpen(false);
+    setHoldOpen(false);
+  };
+
+  const handleSelect = (seat: TicketSeat) => {
+    setBuyOpen(false);
+    setHoldOpen(false);
+
+    if (seat.status !== 'available') {
+      setSelectedIds((current) => (current.length === 1 && current[0] === seat.id ? [] : [seat.id]));
+      return;
+    }
+
+    setSelectedIds((current) => {
+      const currentSeats = current
+        .map((id) => seats.find((item) => item.id === id))
+        .filter((item): item is TicketSeat => !!item);
+      const onlyAvailable = currentSeats.every((item) => item.status === 'available');
+
+      if (!onlyAvailable || !current.length) {
+        return [seat.id];
+      }
+
+      return current.includes(seat.id) ? current.filter((id) => id !== seat.id) : [...current, seat.id];
+    });
+  };
 
   return (
     <Box
@@ -85,7 +131,7 @@ export default function TicketSeatMap({ ticket }: Props) {
             <Typography variant="h6">Seat layout</Typography>
           </Box>
           <Tooltip title="Refresh">
-            <IconButton aria-label="Refresh" onClick={() => setSelectedId(null)}>
+            <IconButton aria-label="Refresh" onClick={clearSelection}>
               <Iconify icon="solar:restart-bold" />
             </IconButton>
           </Tooltip>
@@ -115,177 +161,266 @@ export default function TicketSeatMap({ ticket }: Props) {
           <Stack spacing={1}>
             {Array.from({ length: 10 }, (_, index) => index + 1).map((row) => (
               <Stack key={row} direction="row" spacing={1} alignItems="center" justifyContent="center">
-                <SeatButton seat={seatAt(seats, 'A', row)} selectedId={selectedId} onSelect={setSelectedId} />
-                <SeatButton seat={seatAt(seats, 'B', row)} selectedId={selectedId} onSelect={setSelectedId} />
+                <SeatButton seat={seatAt(seats, 'A', row)} selectedIds={selectedIds} onSelect={handleSelect} />
+                <SeatButton seat={seatAt(seats, 'B', row)} selectedIds={selectedIds} onSelect={handleSelect} />
                 <Typography
                   variant="caption"
                   sx={{ width: 36, textAlign: 'center', color: 'text.disabled', fontWeight: 600 }}
                 >
                   {row === 1 ? 'Aisle' : ''}
                 </Typography>
-                <SeatButton seat={seatAt(seats, 'C', row)} selectedId={selectedId} onSelect={setSelectedId} />
-                <SeatButton seat={seatAt(seats, 'D', row)} selectedId={selectedId} onSelect={setSelectedId} />
+                <SeatButton seat={seatAt(seats, 'C', row)} selectedIds={selectedIds} onSelect={handleSelect} />
+                <SeatButton seat={seatAt(seats, 'D', row)} selectedIds={selectedIds} onSelect={handleSelect} />
               </Stack>
             ))}
           </Stack>
         </Box>
 
         <Typography variant="caption" sx={{ display: 'block', mt: 2, color: 'text.secondary', fontWeight: 600 }}>
-          A and D are windows. B and C are aisle seats. Rows count from the front.
+          A and D are windows. B and C are aisle seats. Rows count from the front. Click multiple available seats to book
+          together.
         </Typography>
       </Card>
 
       <Card sx={{ p: 3, position: { md: 'sticky' }, top: { md: 96 } }}>
-        <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1} sx={{ mb: 2 }}>
-          <Typography variant="h6">{selected ? `Seat ${selected.id}` : 'Seat details'}</Typography>
-          {selected ? (
-            <Label
-              variant="soft"
-              color={selected.status === 'available' ? 'success' : selected.status === 'held' ? 'warning' : 'default'}
-            >
-              {selected.status === 'available' ? 'Available' : selected.status === 'held' ? 'Held' : 'Booked'}
-            </Label>
-          ) : (
-            <Typography variant="caption" sx={{ color: 'text.disabled', fontWeight: 600 }}>
-              Select a seat
-            </Typography>
-          )}
-        </Stack>
+        {multiAvailable ? (
+          <Stack spacing={2}>
+            <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1}>
+              <Typography variant="h6">
+                {selectedSeats.length} seats selected
+              </Typography>
+              <Label variant="soft" color="success">
+                Available
+              </Label>
+            </Stack>
 
-        <Box
-          display="grid"
-          gridTemplateColumns="repeat(2, minmax(0, 1fr))"
-          columnGap={2}
-          rowGap={1.75}
-        >
-          <SeatField label="Price" value={selected ? `৳${selected.price.toLocaleString('en-BD')}` : undefined} />
-          <SeatField label="Row" value={selected ? String(selected.row) : undefined} />
-          <SeatField label="Side" value={selected?.side} />
-          <SeatField label="Position" value={selected?.position} />
-          <Divider sx={{ gridColumn: '1 / -1' }} />
-          {selected?.status === 'held' ? (
-            <>
-              <HoldByField name={selected.holdBy} avatarUrl={selected.holdByAvatar} />
-              <SeatField label="Held on" value={selected.heldAt ? fDateTime(selected.heldAt) : undefined} />
-              <Divider sx={{ gridColumn: '1 / -1' }} />
-              <Box sx={{ gridColumn: '1 / -1', minWidth: 0 }}>
-                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
-                  Held note
+            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+              {selectedSeats.map((seat) => (
+                <Chip
+                  key={seat.id}
+                  size="small"
+                  label={seat.id}
+                  color="primary"
+                  variant="outlined"
+                  onDelete={() => handleSelect(seat)}
+                />
+              ))}
+            </Stack>
+
+            <SeatField label="Total" value={`৳${selectedTotal.toLocaleString('en-BD')}`} />
+            <SeatField label="Departure" value={ticket.origin} />
+            <SeatField label="Destination" value={ticket.destination} />
+
+            <Stack spacing={1.25} sx={{ mt: 1 }}>
+              <Button
+                variant="contained"
+                color="success"
+                size="large"
+                fullWidth
+                startIcon={<Iconify icon="solar:ticket-bold" />}
+                sx={{ fontWeight: 700 }}
+                onClick={() => setBuyOpen(true)}
+              >
+                Book
+              </Button>
+              <Button
+                variant="contained"
+                color="warning"
+                size="large"
+                fullWidth
+                startIcon={<Iconify icon="solar:hourglass-bold" />}
+                sx={{ fontWeight: 700 }}
+                onClick={() => setHoldOpen(true)}
+              >
+                Hold ticket
+              </Button>
+            </Stack>
+          </Stack>
+        ) : (
+          <>
+            <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1} sx={{ mb: 2 }}>
+              <Typography variant="h6">{selected ? `Seat ${selected.id}` : 'Seat details'}</Typography>
+              {selected ? (
+                <Label
+                  variant="soft"
+                  color={
+                    selected.status === 'available' ? 'success' : selected.status === 'held' ? 'warning' : 'default'
+                  }
+                >
+                  {selected.status === 'available' ? 'Available' : selected.status === 'held' ? 'Held' : 'Booked'}
+                </Label>
+              ) : (
+                <Typography variant="caption" sx={{ color: 'text.disabled', fontWeight: 600 }}>
+                  Select a seat
                 </Typography>
-                <Typography variant="body2" sx={{ mt: 0.5, color: selected.holdNote ? 'text.primary' : 'text.disabled' }}>
-                  {selected.holdNote || EMPTY}
-                </Typography>
-              </Box>
-            </>
-          ) : (
-            <>
-              <PersonField label="Booked by" name={selected?.bookedBy} />
-              <SeatField label="Booking time" value={selected?.bookedAt ? fDateTime(selected.bookedAt) : undefined} />
-              <PersonField label="Passenger" name={selected?.passenger} phone={selected?.passengerPhone} />
-              <SeatField label="Luggage" value={formatLuggage(selected?.luggage)} />
+              )}
+            </Stack>
+
+            <Box
+              display="grid"
+              gridTemplateColumns="repeat(2, minmax(0, 1fr))"
+              columnGap={2}
+              rowGap={1.75}
+            >
+              <SeatField
+                label="Price"
+                value={selected ? `৳${selected.price.toLocaleString('en-BD')}` : undefined}
+              />
+              <SeatField label="Row" value={selected ? String(selected.row) : undefined} />
+              <SeatField label="Side" value={selected?.side} />
+              <SeatField label="Position" value={selected?.position} />
               <Divider sx={{ gridColumn: '1 / -1' }} />
-              <SeatField label="Boarding" value={selected?.boarding} />
-              <Box />
-              {selected?.status === 'booked' && (
+              {selected?.status === 'held' ? (
                 <>
+                  <HoldByField name={selected.holdBy} avatarUrl={selected.holdByAvatar} />
+                  <SeatField
+                    label="Held on"
+                    value={selected.heldAt ? fDateTime(selected.heldAt) : undefined}
+                  />
                   <Divider sx={{ gridColumn: '1 / -1' }} />
                   <Box sx={{ gridColumn: '1 / -1', minWidth: 0 }}>
                     <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
-                      Note
+                      Held note
                     </Typography>
-                    <Typography variant="body2" sx={{ mt: 0.5, color: selected.note ? 'text.primary' : 'text.disabled' }}>
-                      {selected.note || EMPTY}
+                    <Typography
+                      variant="body2"
+                      sx={{ mt: 0.5, color: selected.holdNote ? 'text.primary' : 'text.disabled' }}
+                    >
+                      {selected.holdNote || EMPTY}
                     </Typography>
                   </Box>
                 </>
+              ) : (
+                <>
+                  <PersonField label="Booked by" name={selected?.bookedBy} />
+                  <SeatField
+                    label="Booking time"
+                    value={selected?.bookedAt ? fDateTime(selected.bookedAt) : undefined}
+                  />
+                  <PersonField
+                    label="Passenger"
+                    name={selected?.passenger}
+                    phone={selected?.passengerPhone}
+                  />
+                  <SeatField label="Luggage" value={formatLuggage(selected?.luggage)} />
+                  <Divider sx={{ gridColumn: '1 / -1' }} />
+                  <SeatField label="Boarding" value={selected?.boarding} />
+                  <Box />
+                  {selected?.status === 'booked' && (
+                    <>
+                      <Divider sx={{ gridColumn: '1 / -1' }} />
+                      <Box sx={{ gridColumn: '1 / -1', minWidth: 0 }}>
+                        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
+                          Note
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          sx={{ mt: 0.5, color: selected.note ? 'text.primary' : 'text.disabled' }}
+                        >
+                          {selected.note || EMPTY}
+                        </Typography>
+                      </Box>
+                    </>
+                  )}
+                </>
               )}
-            </>
-          )}
-          <SeatField label="Departure" value={selected ? ticket.origin : undefined} />
-          <SeatField label="Destination" value={selected ? ticket.destination : undefined} />
-        </Box>
-        {selected?.status === 'available' && (
-          <Stack spacing={1.25} sx={{ mt: 3 }}>
-            <Button
-              variant="contained"
-              color="success"
-              size="large"
-              fullWidth
-              startIcon={<Iconify icon="solar:ticket-bold" />}
-              sx={{ fontWeight: 700 }}
-              onClick={() => setBuyOpen(true)}
-            >
-              Book
-            </Button>
-            <Button
-              variant="contained"
-              color="warning"
-              size="large"
-              fullWidth
-              startIcon={<Iconify icon="solar:hourglass-bold" />}
-              sx={{ fontWeight: 700 }}
-              onClick={() => setHoldOpen(true)}
-            >
-              Hold ticket
-            </Button>
-          </Stack>
-        )}
-        {selected?.status === 'held' && (
-          <Button variant="outlined" color="warning" size="large" fullWidth sx={{ mt: 3, fontWeight: 700 }}>
-            Cancel hold
-          </Button>
-        )}
-        {selected?.status === 'booked' && (
-          <Button
-            variant="contained"
-            size="large"
-            fullWidth
-            startIcon={<Iconify icon="solar:printer-bold" />}
-            sx={{ mt: 3, fontWeight: 700 }}
-          >
-            Print Ticket
-          </Button>
+              <SeatField label="Departure" value={selected ? ticket.origin : undefined} />
+              <SeatField label="Destination" value={selected ? ticket.destination : undefined} />
+            </Box>
+            {selected?.status === 'available' && (
+              <Stack spacing={1.25} sx={{ mt: 3 }}>
+                <Button
+                  variant="contained"
+                  color="success"
+                  size="large"
+                  fullWidth
+                  startIcon={<Iconify icon="solar:ticket-bold" />}
+                  sx={{ fontWeight: 700 }}
+                  onClick={() => setBuyOpen(true)}
+                >
+                  Book
+                </Button>
+                <Button
+                  variant="contained"
+                  color="warning"
+                  size="large"
+                  fullWidth
+                  startIcon={<Iconify icon="solar:hourglass-bold" />}
+                  sx={{ fontWeight: 700 }}
+                  onClick={() => setHoldOpen(true)}
+                >
+                  Hold ticket
+                </Button>
+              </Stack>
+            )}
+            {selected?.status === 'held' && (
+              <Button variant="outlined" color="warning" size="large" fullWidth sx={{ mt: 3, fontWeight: 700 }}>
+                Cancel hold
+              </Button>
+            )}
+            {selected?.status === 'booked' && (
+              <Button
+                variant="contained"
+                size="large"
+                fullWidth
+                startIcon={<Iconify icon="solar:printer-bold" />}
+                sx={{ mt: 3, fontWeight: 700 }}
+              >
+                Print Ticket
+              </Button>
+            )}
+          </>
         )}
       </Card>
 
       <BuyTicketDialog
-        open={buyOpen}
-        seatId={selected?.id ?? ''}
-        price={selected?.price ?? 0}
+        open={buyOpen && actionableSeats.length > 0}
+        seats={actionableSeats}
         boardingOptions={boardingOptions}
         onClose={() => setBuyOpen(false)}
         onBuy={(form) => {
           const luggage = form.luggage === '' ? undefined : Math.max(0, Number(form.luggage));
+          const ids = new Set(actionableSeats.map((seat) => seat.id));
+          const priced = applySeatDiscounts(actionableSeats, form.discount, form.discountMode);
+          const priceById = new Map(priced.map((item) => [item.id, item.price]));
 
           setSeats((current) =>
-            current.map((seat) =>
-              seat.id === selectedId
-                ? {
-                    ...seat,
-                    status: 'booked',
-                    passenger: form.passenger.trim() || undefined,
-                    passengerPhone: form.phoneNumber.trim() || undefined,
-                    note: form.note.trim() || undefined,
-                    boarding: form.boarding || undefined,
-                    luggage: luggage !== undefined && Number.isFinite(luggage) ? luggage : undefined,
-                    bookedAt: new Date(),
-                    price: discountTotal(seat.price, form.discount, form.discountMode),
-                  }
-                : seat
-            )
+            current.map((seat) => {
+              if (!ids.has(seat.id)) {
+                return seat;
+              }
+
+              return {
+                ...seat,
+                status: 'booked',
+                passenger: form.passenger.trim() || undefined,
+                passengerPhone: form.phoneNumber.trim() || undefined,
+                note: form.note.trim() || undefined,
+                boarding: form.boarding || undefined,
+                luggage: luggage !== undefined && Number.isFinite(luggage) ? luggage : undefined,
+                bookedAt: new Date(),
+                price: priceById.get(seat.id) ?? seat.price,
+                holdBy: undefined,
+                holdByAvatar: undefined,
+                holdNote: undefined,
+                heldAt: undefined,
+              };
+            })
           );
-          setBuyOpen(false);
+          clearSelection();
         }}
       />
 
       <HoldTicketDialog
-        open={holdOpen}
-        seatId={selected?.id ?? ''}
+        open={holdOpen && actionableSeats.length > 0}
+        seatIds={actionableSeats.map((seat) => seat.id)}
         onClose={() => setHoldOpen(false)}
         onHold={({ name, avatarUrl, note }) => {
+          const ids = new Set(actionableSeats.map((seat) => seat.id));
+
           setSeats((current) =>
             current.map((seat) =>
-              seat.id === selectedId
+              ids.has(seat.id)
                 ? {
                     ...seat,
                     status: 'held',
@@ -297,7 +432,7 @@ export default function TicketSeatMap({ ticket }: Props) {
                 : seat
             )
           );
-          setHoldOpen(false);
+          clearSelection();
         }}
       />
     </Box>
@@ -308,20 +443,26 @@ export default function TicketSeatMap({ ticket }: Props) {
 
 function BuyTicketDialog({
   open,
-  seatId,
-  price,
+  seats,
   boardingOptions,
   onClose,
   onBuy,
 }: {
   open: boolean;
-  seatId: string;
-  price: number;
+  seats: TicketSeat[];
   boardingOptions: string[];
   onClose: () => void;
   onBuy: (form: BuyForm) => void;
 }) {
   const [form, setForm] = useState(EMPTY_BUY_FORM);
+  const seatIds = seats.map((seat) => seat.id);
+  const subtotal = seats.reduce((sum, seat) => sum + seat.price, 0);
+  const total = applySeatDiscounts(seats, form.discount, form.discountMode).reduce(
+    (sum, seat) => sum + seat.price,
+    0
+  );
+  const title =
+    seats.length > 1 ? `Buy ${seats.length} seats` : `Buy seat ${seatIds[0] ?? ''}`;
 
   useEffect(() => {
     if (open) {
@@ -340,10 +481,15 @@ function BuyTicketDialog({
       open={open}
       onClose={onClose}
     >
-      <DialogTitle>Buy seat {seatId}</DialogTitle>
+      <DialogTitle>{title}</DialogTitle>
 
       <DialogContent>
         <Stack spacing={2.5} sx={{ pt: 1 }}>
+          {seats.length > 1 && (
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+              Seats: {seatIds.join(', ')} · Subtotal ৳{subtotal.toLocaleString('en-BD')}
+            </Typography>
+          )}
           <TextField
             fullWidth
             label="Passenger name"
@@ -441,7 +587,7 @@ function BuyTicketDialog({
             fullWidth
             label="Total price"
             placeholder="Total price"
-            value={`৳${discountTotal(price, form.discount, form.discountMode).toLocaleString('en-BD')}`}
+            value={`৳${total.toLocaleString('en-BD')}`}
             InputProps={{ ...fieldIcon('solar:tag-price-bold'), readOnly: true }}
           />
         </Stack>
@@ -461,17 +607,19 @@ function BuyTicketDialog({
 
 function HoldTicketDialog({
   open,
-  seatId,
+  seatIds,
   onClose,
   onHold,
 }: {
   open: boolean;
-  seatId: string;
+  seatIds: string[];
   onClose: () => void;
   onHold: (value: { name: string; avatarUrl: string; note: string }) => void;
 }) {
   const { user } = useMockedUser();
   const [note, setNote] = useState('');
+  const title =
+    seatIds.length > 1 ? `Hold ${seatIds.length} seats` : `Hold seat ${seatIds[0] ?? ''}`;
 
   useEffect(() => {
     if (open) {
@@ -481,10 +629,15 @@ function HoldTicketDialog({
 
   return (
     <Dialog fullWidth maxWidth="sm" open={open} onClose={onClose}>
-      <DialogTitle>Hold seat {seatId}</DialogTitle>
+      <DialogTitle>{title}</DialogTitle>
 
       <DialogContent>
         <Stack spacing={2.5} sx={{ pt: 1 }}>
+          {seatIds.length > 1 && (
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+              Seats: {seatIds.join(', ')}
+            </Typography>
+          )}
           <TextField
             fullWidth
             label="Held by"
@@ -544,6 +697,32 @@ function discountTotal(price: number, discount: string, mode: DiscountMode) {
   return Math.max(0, Math.round(price - off));
 }
 
+function applySeatDiscounts(seats: TicketSeat[], discount: string, mode: DiscountMode) {
+  if (mode === 'percent') {
+    return seats.map((seat) => ({
+      id: seat.id,
+      price: discountTotal(seat.price, discount, 'percent'),
+    }));
+  }
+
+  const subtotal = seats.reduce((sum, seat) => sum + seat.price, 0);
+  const discountedTotal = discountTotal(subtotal, discount, 'amount');
+  if (!seats.length || subtotal <= 0) {
+    return seats.map((seat) => ({ id: seat.id, price: seat.price }));
+  }
+
+  let remaining = discountedTotal;
+  return seats.map((seat, index) => {
+    if (index === seats.length - 1) {
+      return { id: seat.id, price: remaining };
+    }
+
+    const share = Math.round((seat.price / subtotal) * discountedTotal);
+    remaining -= share;
+    return { id: seat.id, price: share };
+  });
+}
+
 function fieldIcon(icon: string) {
   return {
     startAdornment: (
@@ -571,14 +750,14 @@ function formatLuggage(count?: number) {
 
 function SeatButton({
   seat,
-  selectedId,
+  selectedIds,
   onSelect,
 }: {
   seat: TicketSeat;
-  selectedId: string | null;
-  onSelect: (id: string | null) => void;
+  selectedIds: string[];
+  onSelect: (seat: TicketSeat) => void;
 }) {
-  const selected = seat.id === selectedId;
+  const selected = selectedIds.includes(seat.id);
   const booked = seat.status === 'booked';
   const held = seat.status === 'held';
 
@@ -587,7 +766,7 @@ function SeatButton({
       component="button"
       type="button"
       aria-pressed={selected}
-      onClick={() => onSelect(selected ? null : seat.id)}
+      onClick={() => onSelect(seat)}
       sx={{
         width: 48,
         height: 36,
