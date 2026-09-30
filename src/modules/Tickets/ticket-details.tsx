@@ -47,6 +47,15 @@ const STOPPAGES_MAX_HEIGHT = 520;
 
 const STOP_DOT_COLORS = ['success.main', 'info.main', 'warning.main', 'error.main', 'primary.main'];
 
+function legKilometers(ticketId: string, legIndex: number) {
+  const seed = Number(ticketId.replace(/\D/g, '')) || 1;
+  return (((seed * 17 + (legIndex + 1) * 53) % 1400) + 120) / 10;
+}
+
+function formatKilometers(value: number) {
+  return `${(Math.round(value * 10) / 10).toFixed(1)} KM`;
+}
+
 const AMENITIES: { label: string; service: string; icon: string }[] = [
   { label: 'Wi-Fi', service: 'Wi-Fi', icon: 'solar:wi-fi-bold' },
   { label: 'AC', service: 'Air conditioned', icon: 'solar:snowflake-bold' },
@@ -360,6 +369,8 @@ function StoppagesCard({ ticket, matchHeight }: { ticket: TicketItem; matchHeigh
   ];
 
   const height = matchHeight ? Math.min(matchHeight, STOPPAGES_MAX_HEIGHT) : undefined;
+  const legs = stops.slice(0, -1).map((_, index) => legKilometers(ticket.id, index));
+  const totalKilometers = legs.reduce((sum, kilometers) => sum + kilometers, 0);
 
   return (
     <Card
@@ -375,28 +386,67 @@ function StoppagesCard({ ticket, matchHeight }: { ticket: TicketItem; matchHeigh
         Stoppages
       </Typography>
 
-      <Box sx={{ px: 3, pt: 1, pb: 3, overflow: 'auto', flex: 1, minHeight: 0 }}>
+      <Box sx={{ px: 3, pt: 1, overflow: 'auto', flex: 1, minHeight: 0 }}>
         {stops.map((stop, index) => (
-          <StopRow key={stop.key} stop={stop} last={index === stops.length - 1} />
+          <StopRow
+            key={stop.key}
+            stop={stop}
+            last={index === stops.length - 1}
+            distance={index < legs.length ? formatKilometers(legs[index]) : undefined}
+          />
         ))}
       </Box>
+
+      <Stack
+        direction="row"
+        alignItems="baseline"
+        justifyContent="space-between"
+        sx={{
+          mx: 3,
+          mt: 2,
+          pt: 1.75,
+          pb: 2.5,
+          borderTop: (theme) => `1px solid ${theme.palette.divider}`,
+        }}
+      >
+        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
+          Total
+        </Typography>
+        <Typography variant="subtitle2">{formatKilometers(totalKilometers)}</Typography>
+      </Stack>
     </Card>
   );
 }
 
-function StopRow({ stop, last }: { stop: StopEntry; last: boolean }) {
+function StopRow({
+  stop,
+  last,
+  distance,
+}: {
+  stop: StopEntry;
+  last: boolean;
+  distance?: string;
+}) {
   return (
-    <Stack direction="row" spacing={2}>
+    <Stack direction="row" spacing={2} alignItems="stretch">
       <Box sx={{ width: 22, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <StopMarker stop={stop} />
-        {!last && <Box sx={{ width: 2, flexGrow: 1, bgcolor: 'divider', minHeight: 28, my: 0.5 }} />}
+        {!last && <Box sx={{ width: 2, flexGrow: 1, bgcolor: 'divider', minHeight: 16, my: 0.75 }} />}
       </Box>
 
-      <Box sx={{ pb: last ? 0 : 2.5, minWidth: 0 }}>
+      <Box sx={{ minWidth: 0, flex: 1 }}>
         <Typography variant="subtitle2">{stop.name}</Typography>
         {stop.time && (
-          <Typography variant="caption" sx={{ color: 'text.disabled' }}>
+          <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block' }}>
             {stop.time}
+          </Typography>
+        )}
+        {distance && (
+          <Typography
+            variant="caption"
+            sx={{ color: 'text.secondary', fontWeight: 600, display: 'block', mt: 1.75, mb: 2.25 }}
+          >
+            {distance}
           </Typography>
         )}
       </Box>

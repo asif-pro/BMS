@@ -7,6 +7,7 @@ import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 
 import { paths } from '@/routes/paths';
+import { RouterLink } from '@/routes/components';
 
 import { useBoolean } from '@/hooks/use-boolean';
 
@@ -161,7 +162,14 @@ export default function TicketListView() {
           { name: 'Trips' },
         ]}
         action={
-          <Button variant="contained" startIcon={<Iconify icon="mingcute:add-line" />}>
+          <Button
+            component={RouterLink}
+            href={ticketPaths.create}
+            size="large"
+            variant="contained"
+            startIcon={<Iconify icon="mingcute:add-line" />}
+            sx={{ minWidth: 180 }}
+          >
             Trip
           </Button>
         }

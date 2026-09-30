@@ -214,6 +214,15 @@ const SERVICE_SETS = [
 
 export const _operators = OPERATORS;
 
+export type TicketVehicleOption = {
+  busNumber: string;
+  busModel: string;
+};
+
+export function formatTicketVehicleOption(option: TicketVehicleOption) {
+  return `${option.busNumber} · ${option.busModel}`;
+}
+
 export const _tickets: TicketItem[] = NAMES.map((name, index) => {
   const createdAt = subDays(new Date(), index + 1);
   const startDate = set(addDays(new Date(), index + 2), {
@@ -270,3 +279,12 @@ export const _tickets: TicketItem[] = NAMES.map((name, index) => {
     },
   };
 });
+
+export const _ticketVehicles: TicketVehicleOption[] = Array.from(
+  new Map(
+    _tickets.map((ticket) => [
+      ticket.busNumber,
+      { busNumber: ticket.busNumber, busModel: ticket.busModel },
+    ])
+  ).values()
+);

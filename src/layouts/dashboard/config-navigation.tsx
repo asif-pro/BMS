@@ -17,7 +17,7 @@ const ICONS = {
   trips: icon('ic_calendar'),
   tickets: icon('ic_invoice'),
   bookings: icon('ic_booking'),
-  vehicles: icon('ic_tour'),
+  fleet: icon('ic_fleet'),
   terminals: icon('ic_folder'),
   customers: icon('ic_user'),
   users: icon('ic_lock'),
@@ -55,8 +55,9 @@ export function useNavData() {
           },
           {
             title: 'Tickets',
-            path: paths.dashboard.tickets,
+            path: paths.dashboard.tickets.root,
             icon: ICONS.tickets,
+            children: [{ title: 'Quick Ticket', path: paths.dashboard.tickets.quick }],
           },
           {
             title: 'Bookings',
@@ -64,10 +65,11 @@ export function useNavData() {
             icon: ICONS.bookings,
           },
           {
-            title: 'Vehicles',
+            title: 'Fleet',
             path: paths.dashboard.vehicles.root,
-            icon: ICONS.vehicles,
+            icon: ICONS.fleet,
             children: [
+              { title: 'Vehicles', path: paths.dashboard.vehicles.list },
               { title: 'Layout', path: paths.dashboard.vehicles.layout },
               { title: 'Maintenance', path: paths.dashboard.vehicles.maintenance },
             ],

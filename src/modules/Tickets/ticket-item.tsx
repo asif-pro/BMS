@@ -2,7 +2,6 @@ import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
-import Button from '@mui/material/Button';
 import ListItemText from '@mui/material/ListItemText';
 
 import { RouterLink } from '@/routes/components';
@@ -20,6 +19,13 @@ import type { TicketItem } from './types';
 type Props = {
   ticket: TicketItem;
 };
+
+function ticketDistance(id: string) {
+  const index = Number(id.replace(/\D/g, '')) || 1;
+  const kilometers = ((((index * 37) % 220) + 35) / 10).toFixed(1);
+
+  return `${kilometers} KM`;
+}
 
 export default function TicketItem({ ticket }: Props) {
   const { id, name, images, bookers, available, status, busNumber, driverName } = ticket;
@@ -39,15 +45,28 @@ export default function TicketItem({ ticket }: Props) {
       sx={{
         p: (theme) => theme.spacing(2.5, 2.5, 2, 2.5),
       }}
-      primary={`${busNumber} · ${driverName}`}
-      secondary={
-        <Link component={RouterLink} href={ticketPaths.details(id)} color="inherit">
-          {name}
-        </Link>
+      primary={
+        <Stack
+          component="span"
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+          spacing={1}
+        >
+          <Box component="span" sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {busNumber} · {driverName}
+          </Box>
+          <Box component="span" sx={{ flexShrink: 0, color: 'text.secondary', fontWeight: 700 }}>
+            {ticketDistance(id)}
+          </Box>
+        </Stack>
       }
+      secondary={name}
       primaryTypographyProps={{
         typography: 'caption',
         color: 'text.disabled',
+        component: 'div',
+        width: 1,
       }}
       secondaryTypographyProps={{
         mt: 1,
@@ -101,24 +120,31 @@ export default function TicketItem({ ticket }: Props) {
         <Iconify icon="solar:flag-bold" sx={{ color: 'warning.main', flexShrink: 0 }} />
         {status}
       </Stack>
-
-      <Button
-        component={RouterLink}
-        href={ticketPaths.details(id)}
-        variant="contained"
-        size="small"
-        sx={{ gridColumn: '1 / -1', justifySelf: 'end' }}
-      >
-        View
-      </Button>
     </Box>
   );
 
   return (
-    <Card>
-      {renderImages}
-      {renderTexts}
-      {renderInfo}
-    </Card>
+    <Link
+      component={RouterLink}
+      href={ticketPaths.details(id)}
+      underline="none"
+      color="inherit"
+      sx={{ display: 'block', height: 1 }}
+    >
+      <Card
+        sx={{
+          height: 1,
+          cursor: 'pointer',
+          transition: (theme) => theme.transitions.create('box-shadow'),
+          '&:hover': {
+            boxShadow: (theme) => theme.shadows[8],
+          },
+        }}
+      >
+        {renderImages}
+        {renderTexts}
+        {renderInfo}
+      </Card>
+    </Link>
   );
 }

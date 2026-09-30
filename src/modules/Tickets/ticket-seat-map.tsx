@@ -108,8 +108,8 @@ export default function TicketSeatMap({ ticket }: Props) {
           }}
         >
           <Stack direction="row" justifyContent="space-between" sx={{ mb: 2 }}>
-            <EndCap label="Driver" />
-            <EndCap label="Door" />
+            <EndCap icon="mdi:steering" label="Driver" />
+            <EndCap icon="solar:login-3-linear" label="Door" />
           </Stack>
 
           <Stack spacing={1}>
@@ -609,21 +609,25 @@ function SeatButton({
   );
 }
 
-function EndCap({ label }: { label: string }) {
+function EndCap({ icon, label }: { icon: string; label: string }) {
   return (
-    <Typography
-      variant="caption"
-      sx={{
-        px: 1.25,
-        py: 0.75,
-        borderRadius: 1,
-        fontWeight: 700,
-        color: 'text.secondary',
-        bgcolor: 'action.hover',
-      }}
-    >
-      {label}
-    </Typography>
+    <Tooltip title={label} arrow placement="top">
+      <Box
+        aria-label={label}
+        sx={{
+          width: 36,
+          height: 36,
+          borderRadius: 1,
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'text.secondary',
+          bgcolor: 'action.hover',
+        }}
+      >
+        <Iconify icon={icon} width={20} />
+      </Box>
+    </Tooltip>
   );
 }
 
