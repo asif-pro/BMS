@@ -79,6 +79,10 @@ const NavItem = forwardRef<HTMLDivElement, NavItemProps>(
       return null;
     }
 
+    if (hasChild) {
+      return renderContent;
+    }
+
     if (externalLink)
       return (
         <Link

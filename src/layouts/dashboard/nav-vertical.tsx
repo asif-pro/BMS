@@ -34,10 +34,10 @@ export default function NavVertical({ openNav, onCloseNav }: Props) {
   const navData = useNavData();
 
   useEffect(() => {
-    if (openNav) {
-      onCloseNav();
-    }
-  }, [pathname, openNav, onCloseNav]);
+    onCloseNav();
+    // Close the temporary drawer after route changes only.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
   const renderContent = (
     <Scrollbar

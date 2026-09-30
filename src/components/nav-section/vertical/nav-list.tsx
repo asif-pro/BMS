@@ -23,15 +23,12 @@ export default function NavList({ data, depth, slotProps }: NavListProps) {
     }
   }, [data.children]);
 
-  const handleCloseMenu = useCallback(() => {
-    setOpenMenu(false);
-  }, []);
-
   useEffect(() => {
-    if (!active) {
-      handleCloseMenu();
-    }
-  }, [pathname, active, handleCloseMenu]);
+    // Sync expand/collapse to the active route after navigation only.
+    // Do not depend on openMenu — that immediately collapses a just-opened item.
+    setOpenMenu(active);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
   return (
     <>

@@ -30,10 +30,10 @@ export default function NavList({ data, depth, slotProps }: NavListProps) {
   }, []);
 
   useEffect(() => {
-    if (openMenu) {
-      handleCloseMenu();
-    }
-  }, [pathname, openMenu, handleCloseMenu]);
+    handleCloseMenu();
+    // Close the hover submenu after route changes only.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
   return (
     <>
