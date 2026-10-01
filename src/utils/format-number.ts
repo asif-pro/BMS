@@ -1,5 +1,16 @@
 type InputValue = string | number | null | undefined;
 
+export function fNumber(inputValue: InputValue) {
+  if (inputValue === null || inputValue === undefined || inputValue === '') return '';
+
+  const number = Number(inputValue);
+
+  return new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(number);
+}
+
 export function fCurrency(inputValue: InputValue) {
   if (inputValue === null || inputValue === undefined || inputValue === '') return '';
 
@@ -11,6 +22,41 @@ export function fCurrency(inputValue: InputValue) {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   }).format(number);
+}
+
+export function fTaka(inputValue: InputValue) {
+  if (inputValue === null || inputValue === undefined || inputValue === '') return '';
+
+  const number = Number(inputValue);
+
+  return `${number < 0 ? '-' : ''}৳${Math.abs(number).toLocaleString('en-BD', {
+    maximumFractionDigits: 0,
+  })}`;
+}
+
+export function fPercent(inputValue: InputValue) {
+  if (inputValue === null || inputValue === undefined || inputValue === '') return '';
+
+  const number = Number(inputValue) / 100;
+
+  return new Intl.NumberFormat('en-US', {
+    style: 'percent',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 1,
+  }).format(number);
+}
+
+export function fShortenNumber(inputValue: InputValue) {
+  if (inputValue === null || inputValue === undefined || inputValue === '') return '';
+
+  const number = Number(inputValue);
+
+  return new Intl.NumberFormat('en-US', {
+    notation: 'compact',
+    maximumFractionDigits: 2,
+  })
+    .format(number)
+    .replace(/[A-Z]/g, (match) => match.toLowerCase());
 }
 
 export function fData(inputValue: InputValue) {

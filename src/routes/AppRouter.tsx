@@ -17,6 +17,9 @@ import UserDetailsView from '@/modules/Users/user-details-view';
 import CustomerListView from '@/modules/Customers/customer-list-view';
 import CustomerDetailsView from '@/modules/Customers/customer-details-view';
 import BookingListView from '@/modules/Bookings/booking-list-view';
+import AnalyticsView from '@/modules/Analytics/analytics-view';
+import AccountsView from '@/modules/Accounts/accounts-view';
+import MaintenanceListView from '@/modules/Maintenance/maintenance-list-view';
 import { paths } from './paths';
 
 const AppRouter = () => {
@@ -38,8 +41,8 @@ const AppRouter = () => {
           element: <UserDetailsView />,
         },
         { path: 'dashboard/staff/:id', element: <UserDetailsView /> },
-        { path: 'analytics', element: <PageHeading title="ANALYTICS" /> },
-        { path: 'accounts', element: <PageHeading title="ACCOUNTS" /> },
+        { path: 'analytics', element: <AnalyticsView /> },
+        { path: 'accounts', element: <AccountsView /> },
         {
           path: 'trips',
           element: <Outlet />,
@@ -69,7 +72,7 @@ const AppRouter = () => {
             { path: 'new', element: <VehicleCreateView /> },
             { path: 'layout', element: <VehicleLayoutView /> },
             { path: 'layout/:layoutId', element: <VehicleLayoutDetailsView /> },
-            { path: 'maintenance', element: <PageHeading title="MAINTENANCE" /> },
+            { path: 'maintenance', element: <MaintenanceListView /> },
             { path: ':id/edit', element: <VehicleCreateView /> },
             { path: ':id', element: <VehicleCreateView /> },
           ],

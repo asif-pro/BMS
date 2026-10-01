@@ -19,6 +19,9 @@ import { paths } from '@/routes/paths';
 import { useRouter } from '@/routes/hooks';
 import { RouterLink } from '@/routes/components';
 
+import { _staffByRole } from '@/modules/Analytics/_mock';
+import DashboardStaffOverview from '@/modules/Dashboard/components/dashboard-staff-overview';
+
 import Label from '@/components/label';
 import Iconify from '@/components/iconify';
 import Scrollbar from '@/components/scrollbar';
@@ -186,6 +189,16 @@ export default function UserListView() {
         sx={{
           mb: { xs: 3, md: 5 },
         }}
+      />
+
+      <DashboardStaffOverview
+        title={t('STAFF_OVERVIEW')}
+        compact
+        list={_staffByRole.map((item) => ({
+          ...item,
+          icon: 'solar:user-bold-duotone',
+        }))}
+        sx={{ mb: 3 }}
       />
 
       <Card>

@@ -38,7 +38,7 @@ import {
 const EMPTY = '—';
 
 export default function VehicleLayoutDetailsView() {
-  const { t } = useTranslation();
+  const { t } = useTranslation('index');
   const { layoutId } = useParams();
   const layout = findSeatLayout(layoutId);
 
