@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { matchPath } from 'react-router-dom';
 
 import Collapse from '@mui/material/Collapse';
 
@@ -6,14 +7,27 @@ import { usePathname } from '@/routes/hooks';
 import { useActiveLink } from '@/routes/hooks/use-active-link';
 
 import NavItem from './nav-item';
-import { NavListProps, NavSubListProps } from '../types';
+import { NavItemBaseProps, NavListProps, NavSubListProps } from '../types';
 
 // ----------------------------------------------------------------------
+
+function hasActiveChild(children: NavItemBaseProps[] | undefined, pathname: string): boolean {
+  if (!children?.length) {
+    return false;
+  }
+
+  return children.some((child) => {
+    const exact = child.path ? !!matchPath({ path: child.path, end: true }, pathname) : false;
+    const deep = child.path ? !!matchPath({ path: child.path, end: false }, pathname) : false;
+
+    return exact || deep || hasActiveChild(child.children, pathname);
+  });
+}
 
 export default function NavList({ data, depth, slotProps }: NavListProps) {
   const pathname = usePathname();
 
-  const active = useActiveLink(data.path, !!data.children);
+  const active = useActiveLink(data.path, !!data.children) || hasActiveChild(data.children, pathname);
 
   const [openMenu, setOpenMenu] = useState(active);
 

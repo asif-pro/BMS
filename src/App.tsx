@@ -7,6 +7,7 @@ import '@/styles/scrollbar.css';
 
 import ThemeProvider from '@/theme';
 import { MotionLazy } from '@/components/animate';
+import { SnackbarProvider } from '@/components/snackbar';
 import { SettingsDrawer, SettingsProvider, SettingsButton } from '@/components/settings';
 
 import tanStackConfig from './configs/tanstack.config';
@@ -26,24 +27,26 @@ function App() {
     >
       <ThemeProvider>
         <MotionLazy>
-          <SettingsDrawer />
-          <Box
-            sx={{
-              position: 'fixed',
-              bottom: 24,
-              right: 24,
-              zIndex: 1200,
-              bgcolor: 'background.paper',
-              borderRadius: '50%',
-              boxShadow: (theme) => theme.customShadows.z20,
-            }}
-          >
-            <SettingsButton />
-          </Box>
-          <QueryClientProvider client={tanStackConfig}>
-            <ReactQueryDevtools initialIsOpen={false} />
-            <AppRouter />
-          </QueryClientProvider>
+          <SnackbarProvider>
+            <SettingsDrawer />
+            <Box
+              sx={{
+                position: 'fixed',
+                bottom: 24,
+                right: 24,
+                zIndex: 1200,
+                bgcolor: 'background.paper',
+                borderRadius: '50%',
+                boxShadow: (theme) => theme.customShadows.z20,
+              }}
+            >
+              <SettingsButton />
+            </Box>
+            <QueryClientProvider client={tanStackConfig}>
+              <ReactQueryDevtools initialIsOpen={false} />
+              <AppRouter />
+            </QueryClientProvider>
+          </SnackbarProvider>
         </MotionLazy>
       </ThemeProvider>
     </SettingsProvider>

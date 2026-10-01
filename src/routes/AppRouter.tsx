@@ -11,6 +11,9 @@ import VehicleListView from '@/modules/Vehicles/vehicle-list-view';
 import VehicleCreateView from '@/modules/Vehicles/vehicle-create-view';
 import VehicleLayoutView from '@/modules/Vehicles/vehicle-layout-view';
 import VehicleLayoutDetailsView from '@/modules/Vehicles/vehicle-layout-details-view';
+import UserListView from '@/modules/Users/user-list-view';
+import UserCreateView from '@/modules/Users/user-create-view';
+import UserEditView from '@/modules/Users/user-edit-view';
 import { paths } from './paths';
 
 const AppRouter = () => {
@@ -22,6 +25,12 @@ const AppRouter = () => {
         { index: true, element: <Navigate to={paths.dashboard.root} replace /> },
         { path: 'dashboard', element: <Dashboard /> },
         { path: 'dashboard/trips/create', element: <TripCreateView /> },
+        { path: 'dashboard/staff', element: <Navigate to={paths.dashboard.user.list} replace /> },
+        { path: 'dashboard/staff/list', element: <UserListView /> },
+        { path: 'dashboard/staff/new', element: <UserCreateView /> },
+        { path: 'dashboard/user/list', element: <Navigate to={paths.dashboard.user.list} replace /> },
+        { path: 'dashboard/user/new', element: <Navigate to={paths.dashboard.user.new} replace /> },
+        { path: 'dashboard/staff/:id/edit', element: <UserEditView /> },
         { path: 'analytics', element: <PageHeading title="ANALYTICS" /> },
         { path: 'accounts', element: <PageHeading title="ACCOUNTS" /> },
         {
@@ -64,8 +73,8 @@ const AppRouter = () => {
           path: 'users',
           element: <Outlet />,
           children: [
-            { index: true, element: <Navigate to="staff" replace /> },
-            { path: 'staff', element: <PageHeading title="STAFF" /> },
+            { index: true, element: <Navigate to={paths.dashboard.user.list} replace /> },
+            { path: 'staff', element: <Navigate to={paths.dashboard.user.list} replace /> },
           ],
         },
         { path: 'settings', element: <Settings /> },
