@@ -32,7 +32,17 @@ const PASSENGERS = [
 
 const STATUSES: IBookingTripStatus[] = ['taken', 'cancelled', 'returned', 'travelling'];
 
+const SEAT_COLUMNS = ['A', 'B', 'C', 'D'] as const;
+
 const avatar = (index: number) => `/assets/images/avatar/avatar_${(index % 12) + 1}.jpg`;
+
+function buildSeatNumbers(count: number, seed: number) {
+  return Array.from({ length: count }, (_, seatIndex) => {
+    const column = SEAT_COLUMNS[(seed + seatIndex) % SEAT_COLUMNS.length];
+    const row = ((seed * 3 + seatIndex * 2) % 12) + 1;
+    return `${column}${row}`;
+  });
+}
 
 export const _bookingList: IBookingItem[] = Array.from({ length: 24 }, (_, index) => {
   const tickets = (index % 4) + 1;
@@ -40,6 +50,7 @@ export const _bookingList: IBookingItem[] = Array.from({ length: 24 }, (_, index
   const subtotal = unitPrice * tickets;
   const staff = STAFF[index % STAFF.length];
   const trip = _tickets[index % _tickets.length];
+  const seatNumbers = buildSeatNumbers(tickets, index);
 
   let discountType: IBookingDiscountType = 'amount';
   let discount = 0;
@@ -67,6 +78,7 @@ export const _bookingList: IBookingItem[] = Array.from({ length: 24 }, (_, index
     passengerName: PASSENGERS[index % PASSENGERS.length],
     passengerPhone: `+880 17${String(10000000 + index * 211).slice(0, 8)}`,
     tickets,
+    seatNumbers,
     discount,
     discountType,
     originalPrice: subtotal,

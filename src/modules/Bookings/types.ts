@@ -22,6 +22,7 @@ export type IBookingItem = {
   passengerName: string;
   passengerPhone: string;
   tickets: number;
+  seatNumbers: string[];
   discount: number;
   discountType: IBookingDiscountType;
   originalPrice: number;

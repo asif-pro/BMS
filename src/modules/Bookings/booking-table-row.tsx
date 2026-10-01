@@ -4,6 +4,7 @@ import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Avatar from '@mui/material/Avatar';
 import Stack from '@mui/material/Stack';
+import Tooltip from '@mui/material/Tooltip';
 import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
 import ListItemText from '@mui/material/ListItemText';
@@ -59,6 +60,7 @@ export default function BookingTableRow({ row }: Props) {
     passengerName,
     passengerPhone,
     tickets,
+    seatNumbers,
     discount,
     discountType,
     originalPrice,
@@ -131,7 +133,19 @@ export default function BookingTableRow({ row }: Props) {
         />
       </TableCell>
 
-      <TableCell sx={{ whiteSpace: 'nowrap' }}>{tickets}</TableCell>
+      <TableCell sx={{ whiteSpace: 'nowrap' }}>
+        <Tooltip title={seatNumbers.join(', ')} arrow placement="top">
+          <Box
+            component="span"
+            sx={{
+              cursor: 'default',
+              borderBottom: (theme) => `1px dashed ${theme.palette.text.disabled}`,
+            }}
+          >
+            {tickets}
+          </Box>
+        </Tooltip>
+      </TableCell>
 
       <TableCell
         sx={{
