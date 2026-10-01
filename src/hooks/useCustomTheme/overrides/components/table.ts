@@ -14,9 +14,14 @@ export function table(theme: Theme) {
     MuiTableHead: {
       styleOverrides: {
         root: {
-          backgroundColor: 'background.neutral',
-          '& span': {
-            color: 'text.secondary',
+          position: 'relative',
+          zIndex: 1,
+          boxShadow: `0 1px 0 0 ${alpha(theme.palette.grey[500], 0.16)}, 0 4px 12px -4px ${alpha(
+            theme.palette.grey[500],
+            0.2
+          )}`,
+          [`& .${tableCellClasses.head}`]: {
+            borderBottom: 'none',
           },
         },
       },
@@ -54,13 +59,27 @@ export function table(theme: Theme) {
         },
         head: {
           fontSize: 14,
-          color: theme.palette.text.secondary,
-          fontWeight: 360,
-          backgroundColor: theme.palette.background.neutral,
+          color: theme.palette.text.primary,
+          fontWeight: theme.typography.fontWeightSemiBold,
+          backgroundColor:
+            theme.palette.mode === 'light' ? theme.palette.grey[200] : theme.palette.grey[800],
+          '& .MuiTableSortLabel-root': {
+            color: 'inherit',
+            '&:hover': {
+              color: theme.palette.text.primary,
+            },
+            '&.Mui-active': {
+              color: theme.palette.text.primary,
+              '& .MuiTableSortLabel-icon': {
+                color: `${theme.palette.text.primary} !important`,
+              },
+            },
+          },
         },
         stickyHeader: {
-          backgroundColor: theme.palette.background.paper,
-          backgroundImage: `linear-gradient(to bottom, ${theme.palette.background.neutral} 0%, ${theme.palette.background.neutral} 100%)`,
+          backgroundColor:
+            theme.palette.mode === 'light' ? theme.palette.grey[200] : theme.palette.grey[800],
+          backgroundImage: 'none',
         },
         paddingCheckbox: {
           paddingLeft: theme.spacing(1),

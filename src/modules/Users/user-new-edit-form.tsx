@@ -30,6 +30,9 @@ import type { IUserItem } from './types';
 
 type Props = {
   currentUser?: IUserItem;
+  readOnly?: boolean;
+  onCancelEdit?: () => void;
+  onSaveSuccess?: () => void;
 };
 
 type FormState = {
@@ -48,7 +51,33 @@ type FormState = {
   avatarUrl: string | File | null;
 };
 
-export default function UserNewEditForm({ currentUser }: Props) {
+function readOnlyFieldSx(readOnly: boolean) {
+  if (!readOnly) {
+    return undefined;
+  }
+
+  return {
+    '& .MuiInputBase-root': {
+      bgcolor: 'background.neutral',
+    },
+    '& .MuiInputBase-input': {
+      color: 'text.primary',
+      WebkitTextFillColor: 'unset',
+      cursor: 'default',
+      fontWeight: 600,
+    },
+    '& .MuiInputLabel-root': {
+      color: 'text.secondary',
+    },
+  };
+}
+
+export default function UserNewEditForm({
+  currentUser,
+  readOnly = false,
+  onCancelEdit,
+  onSaveSuccess,
+}: Props) {
   const { t } = useTranslation('index');
   const router = useRouter();
   const { enqueueSnackbar } = useSnackbar();
@@ -92,14 +121,28 @@ export default function UserNewEditForm({ currentUser }: Props) {
     }
   }, []);
 
+  const handleCancel = () => {
+    setForm(defaultValues);
+    onCancelEdit?.();
+  };
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (readOnly) {
+      return;
+    }
+
     setSubmitting(true);
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 500));
-      enqueueSnackbar(currentUser ? 'Update success!' : 'Create success!');
-      router.push(paths.dashboard.user.list);
+      enqueueSnackbar(currentUser ? t('UPDATE_SUCCESS') : t('CREATE_SUCCESS'));
+
+      if (currentUser) {
+        onSaveSuccess?.();
+      } else {
+        router.push(paths.dashboard.user.list);
+      }
     } catch (error) {
       console.error(error);
     } finally {
@@ -121,33 +164,44 @@ export default function UserNewEditForm({ currentUser }: Props) {
                 }
                 sx={{ position: 'absolute', top: 24, right: 24 }}
               >
-                {form.status}
+                {t(form.status.toUpperCase())}
               </Label>
             )}
 
             <Box sx={{ mb: 5 }}>
               <StaffAvatarUpload
                 file={form.avatarUrl}
+                readOnly={readOnly}
                 onDrop={handleDrop}
                 helperText={
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      mt: 3,
-                      mx: 'auto',
-                      display: 'block',
-                      textAlign: 'center',
-                      color: 'text.disabled',
-                    }}
-                  >
-                    Allowed *.jpeg, *.jpg, *.png, *.gif
-                    <br /> max size of {fData(3145728)}
-                  </Typography>
+                  readOnly ? undefined : (
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        mt: 3,
+                        mx: 'auto',
+                        display: 'block',
+                        textAlign: 'center',
+                        color: 'text.disabled',
+                      }}
+                      dangerouslySetInnerHTML={{
+                        __html: t('ALLOWED_AVATAR_TYPES', { size: fData(3145728) }),
+                      }}
+                    />
+                  )
                 }
               />
             </Box>
 
-            {currentUser && (
+            {currentUser && readOnly && (
+              <Stack direction="row" spacing={1} justifyContent="center" flexWrap="wrap" useFlexGap sx={{ mb: 1 }}>
+                <Label variant="soft" color={form.isVerified ? 'info' : 'default'}>
+                  {form.isVerified ? t('VERIFIED') : t('UNVERIFIED')}
+                </Label>
+              </Stack>
+            )}
+
+            {currentUser && !readOnly && (
               <FormControlLabel
                 labelPlacement="start"
                 control={
@@ -164,10 +218,10 @@ export default function UserNewEditForm({ currentUser }: Props) {
                 label={
                   <>
                     <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
-                      Banned
+                      {t('BANNED')}
                     </Typography>
                     <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                      Apply disable account
+                      {t('APPLY_DISABLE_ACCOUNT')}
                     </Typography>
                   </>
                 }
@@ -175,28 +229,30 @@ export default function UserNewEditForm({ currentUser }: Props) {
               />
             )}
 
-            <FormControlLabel
-              labelPlacement="start"
-              control={
-                <Switch checked={form.isVerified} onChange={setField('isVerified')} name="isVerified" />
-              }
-              label={
-                <>
-                  <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
-                    Email Verified
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                    Disabling this will automatically send the user a verification email
-                  </Typography>
-                </>
-              }
-              sx={{ mx: 0, width: 1, justifyContent: 'space-between' }}
-            />
+            {!readOnly && (
+              <FormControlLabel
+                labelPlacement="start"
+                control={
+                  <Switch checked={form.isVerified} onChange={setField('isVerified')} name="isVerified" />
+                }
+                label={
+                  <>
+                    <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
+                      {t('EMAIL_VERIFIED')}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      {t('EMAIL_VERIFIED_HINT')}
+                    </Typography>
+                  </>
+                }
+                sx={{ mx: 0, width: 1, justifyContent: 'space-between' }}
+              />
+            )}
 
-            {currentUser && (
+            {currentUser && !readOnly && (
               <Stack justifyContent="center" alignItems="center" sx={{ mt: 3 }}>
                 <Button variant="soft" color="error">
-                  Delete User
+                  {t('DELETE_USER')}
                 </Button>
               </Stack>
             )}
@@ -216,76 +272,116 @@ export default function UserNewEditForm({ currentUser }: Props) {
             >
               <TextField
                 name="name"
-                label="Full Name"
+                label={t('FULL_NAME')}
                 value={form.name}
                 onChange={setField('name')}
                 required
+                InputProps={{ readOnly }}
+                sx={readOnlyFieldSx(readOnly)}
               />
               <TextField
                 name="email"
-                label="Email Address"
+                label={t('EMAIL_ADDRESS')}
                 type="email"
                 value={form.email}
                 onChange={setField('email')}
                 required
+                InputProps={{ readOnly }}
+                sx={readOnlyFieldSx(readOnly)}
               />
               <TextField
                 name="phoneNumber"
-                label="Phone Number"
+                label={t('PHONE_NUMBER')}
                 value={form.phoneNumber}
                 onChange={setField('phoneNumber')}
                 required
+                InputProps={{ readOnly }}
+                sx={readOnlyFieldSx(readOnly)}
               />
 
               <Autocomplete
                 options={COUNTRY_OPTIONS}
                 value={form.country || null}
                 onChange={(_, value) => setForm((prev) => ({ ...prev, country: value || '' }))}
+                readOnly={readOnly}
+                disableClearable={readOnly}
                 renderInput={(params) => (
-                  <TextField {...params} label="Country" placeholder="Choose a country" required />
+                  <TextField
+                    {...params}
+                    label={t('COUNTRY')}
+                    placeholder={t('CHOOSE_A_COUNTRY')}
+                    required
+                    InputProps={{
+                      ...params.InputProps,
+                      readOnly,
+                    }}
+                    sx={readOnlyFieldSx(readOnly)}
+                  />
                 )}
               />
 
               <TextField
                 name="state"
-                label="State/Region"
+                label={t('STATE_REGION')}
                 value={form.state}
                 onChange={setField('state')}
                 required
+                InputProps={{ readOnly }}
+                sx={readOnlyFieldSx(readOnly)}
               />
-              <TextField name="city" label="City" value={form.city} onChange={setField('city')} required />
+              <TextField
+                name="city"
+                label={t('CITY')}
+                value={form.city}
+                onChange={setField('city')}
+                required
+                InputProps={{ readOnly }}
+                sx={readOnlyFieldSx(readOnly)}
+              />
               <TextField
                 name="address"
-                label="Address"
+                label={t('ADDRESS')}
                 value={form.address}
                 onChange={setField('address')}
                 required
+                InputProps={{ readOnly }}
+                sx={readOnlyFieldSx(readOnly)}
               />
               <TextField
                 name="zipCode"
-                label="Zip/Code"
+                label={t('ZIP_CODE')}
                 value={form.zipCode}
                 onChange={setField('zipCode')}
                 required
+                InputProps={{ readOnly }}
+                sx={readOnlyFieldSx(readOnly)}
               />
               <TextField
                 name="company"
-                label="Company"
+                label={t('COMPANY')}
                 value={form.company}
                 onChange={setField('company')}
                 required
+                InputProps={{ readOnly }}
+                sx={readOnlyFieldSx(readOnly)}
               />
               <TextField
                 select
                 name="role"
-                label="Role"
+                label={t('ROLE')}
                 value={form.role}
                 onChange={setField('role')}
                 required
-                SelectProps={{ displayEmpty: true }}
+                SelectProps={{
+                  displayEmpty: true,
+                  readOnly,
+                  IconComponent: readOnly ? () => null : undefined,
+                }}
+                InputProps={{ readOnly }}
+                sx={readOnlyFieldSx(readOnly)}
               >
                 <MenuItem value="">
-                  <em>Select role</em>
+                  <em>{t('SELECT_ROLE')}</em>
                 </MenuItem>
                 {_roles.map((role) => (
                   <MenuItem key={role} value={role}>
@@ -295,15 +391,27 @@ export default function UserNewEditForm({ currentUser }: Props) {
               </TextField>
             </Box>
 
-            <Stack alignItems="flex-end" sx={{ mt: 3 }}>
-              <Button type="submit" variant="contained" disabled={submitting}>
-                {submitting
-                  ? '...'
-                  : !currentUser
-                    ? t('CREATE_STAFF')
-                    : t('SAVE_CHANGES')}
-              </Button>
-            </Stack>
+            {!readOnly && (
+              <Stack direction="row" justifyContent="flex-end" spacing={1.5} sx={{ mt: 3 }}>
+                {currentUser && onCancelEdit && (
+                  <Button
+                    variant="outlined"
+                    color="inherit"
+                    onClick={handleCancel}
+                    disabled={submitting}
+                  >
+                    {t('CANCEL')}
+                  </Button>
+                )}
+                <Button type="submit" variant="contained" disabled={submitting}>
+                  {submitting
+                    ? '...'
+                    : !currentUser
+                      ? t('CREATE_STAFF')
+                      : t('SAVE_CHANGES')}
+                </Button>
+              </Stack>
+            )}
           </Card>
         </Grid>
       </Grid>

@@ -61,7 +61,7 @@ type Props = {
 };
 
 export default function TicketSeatMap({ ticket }: Props) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('index');
   const [seats, setSeats] = useState(ticket.seats);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [buyOpen, setBuyOpen] = useState(false);
@@ -455,7 +455,7 @@ function BuyTicketDialog({
   onClose: () => void;
   onBuy: (form: BuyForm) => void;
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('index');
   const [form, setForm] = useState(EMPTY_BUY_FORM);
   const seatIds = seats.map((seat) => seat.id);
   const subtotal = seats.reduce((sum, seat) => sum + seat.price, 0);
@@ -618,7 +618,7 @@ function HoldTicketDialog({
   onClose: () => void;
   onHold: (value: { name: string; avatarUrl: string; note: string }) => void;
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('index');
   const { user } = useMockedUser();
   const [note, setNote] = useState('');
   const title =

@@ -213,7 +213,19 @@ export default function TicketFilters({
               onClick={() => handleFilterServices(option)}
             />
           }
-          label={option}
+          label={
+            option === 'Wi-Fi'
+              ? t('AMENITY_WIFI')
+              : option === 'Food'
+                ? t('AMENITY_FOOD')
+                : option === 'Toilet'
+                  ? t('AMENITY_TOILET')
+                  : option === 'AC'
+                    ? t('AMENITY_AC')
+                    : option === 'Extra luggage'
+                      ? t('AMENITY_EXTRA_LUGGAGE')
+                      : option
+          }
         />
       ))}
     </Stack>

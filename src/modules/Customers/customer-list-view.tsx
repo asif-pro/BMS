@@ -2,14 +2,10 @@ import isEqual from 'lodash/isEqual';
 import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
 import Card from '@mui/material/Card';
-import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
-import { alpha } from '@mui/material/styles';
 import Container from '@mui/material/Container';
 import TableBody from '@mui/material/TableBody';
 import IconButton from '@mui/material/IconButton';
@@ -19,11 +15,9 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 
 import { paths } from '@/routes/paths';
 import { useRouter } from '@/routes/hooks';
-import { RouterLink } from '@/routes/components';
 
 import { useBoolean } from '@/hooks/use-boolean';
 
-import Label from '@/components/label';
 import Iconify from '@/components/iconify';
 import Scrollbar from '@/components/scrollbar';
 import EmptyContent from '@/components/empty-content';
@@ -41,56 +35,41 @@ import {
   TablePaginationCustom,
 } from '@/components/table';
 
-import { _roles, _userList } from './_mock';
-import UserTableRow from './user-table-row';
-import { StaffCardList } from './staff-card';
-import UserTableToolbar from './user-table-toolbar';
-import UserTableFiltersResult from './user-table-filters-result';
-import type { IUserItem, IUserTableFilters, IUserTableFilterValue } from './types';
+import { _customerList } from './_mock';
+import CustomerTableRow from './customer-table-row';
+import { CustomerCardList } from './customer-card';
+import CustomerTableToolbar from './customer-table-toolbar';
+import CustomerTableFiltersResult from './customer-table-filters-result';
+import type { ICustomerItem, ICustomerTableFilters, ICustomerTableFilterValue } from './types';
 
 // ----------------------------------------------------------------------
 
 type ViewMode = 'list' | 'grid';
 
-const STATUS_OPTIONS = [
-  { value: 'all', label: 'ALL' },
-  { value: 'active', label: 'ACTIVE' },
-  { value: 'pending', label: 'PENDING' },
-  { value: 'banned', label: 'BANNED' },
-  { value: 'rejected', label: 'REJECTED' },
-];
-
 const TABLE_HEAD = [
   { id: 'name', label: 'NAME' },
-  { id: 'phoneNumber', label: 'PHONE_NUMBER', width: 180 },
-  { id: 'company', label: 'COMPANY', width: 220 },
-  { id: 'role', label: 'ROLE', width: 180 },
-  { id: 'status', label: 'STATUS', width: 100 },
+  { id: 'phoneNumber', label: 'PHONE_NUMBER', width: 200 },
+  { id: 'ticketsPurchased', label: 'TICKETS_PURCHASED', width: 160 },
+  { id: 'address', label: 'ADDRESS' },
   { id: '', width: 88 },
 ];
 
-const defaultFilters: IUserTableFilters = {
+const defaultFilters: ICustomerTableFilters = {
   name: '',
-  role: [],
-  status: 'all',
 };
 
 // ----------------------------------------------------------------------
 
-export default function UserListView() {
+export default function CustomerListView() {
   const { t } = useTranslation('index');
   const { enqueueSnackbar } = useSnackbar();
 
   const table = useTable({ defaultRowsPerPage: 10 });
-
   const router = useRouter();
-
   const confirm = useBoolean();
 
   const [view, setView] = useState<ViewMode>('list');
-
-  const [tableData, setTableData] = useState<IUserItem[]>(_userList);
-
+  const [tableData, setTableData] = useState<ICustomerItem[]>(_customerList);
   const [filters, setFilters] = useState(defaultFilters);
 
   const dataFiltered = applyFilter({
@@ -105,9 +84,7 @@ export default function UserListView() {
   );
 
   const denseHeight = table.dense ? 56 : 56 + 20;
-
   const canReset = !isEqual(defaultFilters, filters);
-
   const notFound = (!dataFiltered.length && canReset) || !dataFiltered.length;
 
   const handleChangeView = useCallback(
@@ -120,7 +97,7 @@ export default function UserListView() {
   );
 
   const handleFilters = useCallback(
-    (name: string, value: IUserTableFilterValue) => {
+    (name: string, value: ICustomerTableFilterValue) => {
       table.onResetPage();
       setFilters((prevState) => ({
         ...prevState,
@@ -137,11 +114,8 @@ export default function UserListView() {
   const handleDeleteRow = useCallback(
     (id: string) => {
       const deleteRow = tableData.filter((row) => row.id !== id);
-
       enqueueSnackbar(t('DELETE_SUCCESS'));
-
       setTableData(deleteRow);
-
       table.onUpdatePageDeleteRow(dataInPage.length);
     },
     [dataInPage.length, enqueueSnackbar, t, table, tableData]
@@ -149,11 +123,8 @@ export default function UserListView() {
 
   const handleDeleteRows = useCallback(() => {
     const deleteRows = tableData.filter((row) => !table.selected.includes(row.id));
-
     enqueueSnackbar(t('DELETE_SUCCESS'));
-
     setTableData(deleteRows);
-
     table.onUpdatePageDeleteRows({
       totalRowsInPage: dataInPage.length,
       totalRowsFiltered: dataFiltered.length,
@@ -162,94 +133,38 @@ export default function UserListView() {
 
   const handleViewRow = useCallback(
     (id: string) => {
-      router.push(paths.dashboard.user.details(id));
+      router.push(paths.dashboard.customers.details(id));
     },
     [router]
-  );
-
-  const handleFilterStatus = useCallback(
-    (_event: React.SyntheticEvent, newValue: string) => {
-      handleFilters('status', newValue);
-    },
-    [handleFilters]
   );
 
   return (
     <>
       <Container maxWidth={false} disableGutters>
         <CustomBreadcrumbs
-          heading="USER_LIST"
+          heading="CUSTOMERS"
           links={[
             { name: 'NAV_DASHBOARD', href: paths.dashboard.root },
-            { name: 'NAV_USER', href: paths.dashboard.user.root },
-            { name: 'LIST' },
+            { name: 'NAV_CUSTOMERS' },
           ]}
           action={
-            <Stack direction="row" spacing={1.5} alignItems="center">
-              <ToggleButtonGroup size="small" value={view} exclusive onChange={handleChangeView}>
-                <ToggleButton value="list" aria-label={t('LIST_VIEW')}>
-                  <Iconify icon="solar:list-bold" />
-                </ToggleButton>
-                <ToggleButton value="grid" aria-label={t('GRID_VIEW')}>
-                  <Iconify icon="mingcute:dot-grid-fill" />
-                </ToggleButton>
-              </ToggleButtonGroup>
-
-              <Button
-                component={RouterLink}
-                href={paths.dashboard.user.new}
-                variant="contained"
-                startIcon={<Iconify icon="mingcute:add-line" />}
-              >
-                {t('ADD_STAFF')}
-              </Button>
-            </Stack>
+            <ToggleButtonGroup size="small" value={view} exclusive onChange={handleChangeView}>
+              <ToggleButton value="list" aria-label={t('LIST_VIEW')}>
+                <Iconify icon="solar:list-bold" />
+              </ToggleButton>
+              <ToggleButton value="grid" aria-label={t('GRID_VIEW')}>
+                <Iconify icon="mingcute:dot-grid-fill" />
+              </ToggleButton>
+            </ToggleButtonGroup>
           }
-          sx={{
-            mb: { xs: 3, md: 5 },
-          }}
+          sx={{ mb: { xs: 3, md: 5 } }}
         />
 
         <Card>
-          <Tabs
-            value={filters.status}
-            onChange={handleFilterStatus}
-            sx={{
-              px: 2.5,
-              boxShadow: (theme) => `inset 0 -2px 0 0 ${alpha(theme.palette.grey[500], 0.08)}`,
-            }}
-          >
-            {STATUS_OPTIONS.map((tab) => (
-              <Tab
-                key={tab.value}
-                iconPosition="end"
-                value={tab.value}
-                label={t(tab.label)}
-                icon={
-                  <Label
-                    variant={
-                      ((tab.value === 'all' || tab.value === filters.status) && 'filled') || 'soft'
-                    }
-                    color={
-                      (tab.value === 'active' && 'success') ||
-                      (tab.value === 'pending' && 'warning') ||
-                      (tab.value === 'banned' && 'error') ||
-                      'default'
-                    }
-                  >
-                    {['active', 'pending', 'banned', 'rejected'].includes(tab.value)
-                      ? tableData.filter((user) => user.status === tab.value).length
-                      : tableData.length}
-                  </Label>
-                }
-              />
-            ))}
-          </Tabs>
-
-          <UserTableToolbar filters={filters} onFilters={handleFilters} roleOptions={_roles} />
+          <CustomerTableToolbar filters={filters} onFilters={handleFilters} />
 
           {canReset && (
-            <UserTableFiltersResult
+            <CustomerTableFiltersResult
               filters={filters}
               onFilters={handleFilters}
               onResetFilters={handleResetFilters}
@@ -280,7 +195,7 @@ export default function UserListView() {
               />
 
               <Scrollbar>
-                <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 960 }}>
+                <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 800 }}>
                   <TableHeadCustom
                     order={table.order}
                     orderBy={table.orderBy}
@@ -298,7 +213,7 @@ export default function UserListView() {
 
                   <TableBody>
                     {dataInPage.map((row) => (
-                      <UserTableRow
+                      <CustomerTableRow
                         key={row.id}
                         row={row}
                         selected={table.selected.includes(row.id)}
@@ -321,10 +236,10 @@ export default function UserListView() {
           ) : notFound ? (
             <EmptyContent title="NO_DATA" filled sx={{ py: 10, m: 3 }} />
           ) : (
-            <StaffCardList
-              staff={dataInPage}
-              onView={handleViewRow}
+            <CustomerCardList
+              customers={dataInPage}
               onDelete={handleDeleteRow}
+              onView={handleViewRow}
             />
           )}
 
@@ -375,11 +290,11 @@ function applyFilter({
   comparator,
   filters,
 }: {
-  inputData: IUserItem[];
+  inputData: ICustomerItem[];
   comparator: (a: any, b: any) => number;
-  filters: IUserTableFilters;
+  filters: ICustomerTableFilters;
 }) {
-  const { name, status, role } = filters;
+  const { name } = filters;
 
   const stabilizedThis = inputData.map((el, index) => [el, index] as const);
 
@@ -393,16 +308,11 @@ function applyFilter({
 
   if (name) {
     inputData = inputData.filter(
-      (user) => user.name.toLowerCase().indexOf(name.toLowerCase()) !== -1
+      (customer) =>
+        customer.name.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
+        customer.phoneNumber.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
+        customer.address.toLowerCase().indexOf(name.toLowerCase()) !== -1
     );
-  }
-
-  if (status !== 'all') {
-    inputData = inputData.filter((user) => user.status === status);
-  }
-
-  if (role.length) {
-    inputData = inputData.filter((user) => role.includes(user.role));
   }
 
   return inputData;

@@ -9,18 +9,18 @@ import Stack, { StackProps } from '@mui/material/Stack';
 
 import Iconify from '@/components/iconify';
 
-import type { IUserTableFilters, IUserTableFilterValue } from './types';
+import type { ICustomerTableFilters, ICustomerTableFilterValue } from './types';
 
 // ----------------------------------------------------------------------
 
 type Props = StackProps & {
-  filters: IUserTableFilters;
-  onFilters: (name: string, value: IUserTableFilterValue) => void;
+  filters: ICustomerTableFilters;
+  onFilters: (name: string, value: ICustomerTableFilterValue) => void;
   onResetFilters: VoidFunction;
   results: number;
 };
 
-export default function UserTableFiltersResult({
+export default function CustomerTableFiltersResult({
   filters,
   onFilters,
   onResetFilters,
@@ -33,18 +33,6 @@ export default function UserTableFiltersResult({
     onFilters('name', '');
   }, [onFilters]);
 
-  const handleRemoveStatus = useCallback(() => {
-    onFilters('status', 'all');
-  }, [onFilters]);
-
-  const handleRemoveRole = useCallback(
-    (inputValue: string) => {
-      const newValue = filters.role.filter((item) => item !== inputValue);
-      onFilters('role', newValue);
-    },
-    [filters.role, onFilters]
-  );
-
   return (
     <Stack spacing={1.5} {...other}>
       <Box sx={{ typography: 'body2' }}>
@@ -55,20 +43,6 @@ export default function UserTableFiltersResult({
       </Box>
 
       <Stack flexGrow={1} spacing={1} direction="row" flexWrap="wrap" alignItems="center">
-        {filters.status !== 'all' && (
-          <Block label={t('STATUS_LABEL')}>
-            <Chip size="small" label={t(filters.status.toUpperCase())} onDelete={handleRemoveStatus} />
-          </Block>
-        )}
-
-        {!!filters.role.length && (
-          <Block label={t('ROLE_LABEL')}>
-            {filters.role.map((item) => (
-              <Chip key={item} label={item} size="small" onDelete={() => handleRemoveRole(item)} />
-            ))}
-          </Block>
-        )}
-
         {!!filters.name && (
           <Block label={t('KEYWORD_LABEL')}>
             <Chip label={filters.name} size="small" onDelete={handleRemoveKeyword} />

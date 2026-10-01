@@ -3,6 +3,7 @@ import Switch from '@mui/material/Switch';
 import { Theme, SxProps } from '@mui/material/styles';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import TablePagination, { TablePaginationProps } from '@mui/material/TablePagination';
+import { useTranslation } from 'react-i18next';
 
 // ----------------------------------------------------------------------
 
@@ -19,11 +20,14 @@ export default function TablePaginationCustom({
   sx,
   ...other
 }: Props & TablePaginationProps) {
+  const { t } = useTranslation('index');
+
   return (
     <Box sx={{ position: 'relative', ...sx }}>
       <TablePagination
         rowsPerPageOptions={rowsPerPageOptions}
         component="div"
+        labelRowsPerPage={t('ROWS_PER_PAGE')}
         {...other}
         sx={{
           borderTopColor: 'transparent',
@@ -32,7 +36,7 @@ export default function TablePaginationCustom({
 
       {onChangeDense && (
         <FormControlLabel
-          label="Dense"
+          label={t('DENSE')}
           control={<Switch checked={dense} onChange={onChangeDense} />}
           sx={{
             pl: 2,

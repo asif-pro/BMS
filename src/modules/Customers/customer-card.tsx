@@ -8,23 +8,22 @@ import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import ListItemText from '@mui/material/ListItemText';
-import { useTranslation } from 'react-i18next';
 
 import { useBoolean } from '@/hooks/use-boolean';
+import { useTranslation } from 'react-i18next';
 
-import Label from '@/components/label';
 import Iconify from '@/components/iconify';
 import { ConfirmDialog } from '@/components/custom-dialog';
 import CustomPopover, { usePopover } from '@/components/custom-popover';
 
-import type { IUserItem } from './types';
+import type { ICustomerItem } from './types';
 
 // ----------------------------------------------------------------------
 
 type Props = {
-  staff: IUserItem;
-  onView: VoidFunction;
+  customer: ICustomerItem;
   onDelete: VoidFunction;
+  onView: VoidFunction;
 };
 
 function InfoRow({ icon, label, value }: { icon: string; label: string; value: string }) {
@@ -43,21 +42,9 @@ function InfoRow({ icon, label, value }: { icon: string; label: string; value: s
   );
 }
 
-export default function StaffCard({ staff, onView, onDelete }: Props) {
+export default function CustomerCard({ customer, onDelete, onView }: Props) {
   const { t } = useTranslation('index');
-
-  const {
-    name,
-    role,
-    avatarUrl,
-    phoneNumber,
-    email,
-    company,
-    status,
-    city,
-    country,
-    isVerified,
-  } = staff;
+  const { name, avatarUrl, phoneNumber, address, ticketsPurchased } = customer;
 
   const confirm = useBoolean();
   const popover = usePopover();
@@ -100,46 +87,23 @@ export default function StaffCard({ staff, onView, onDelete }: Props) {
 
           <ListItemText
             primary={name}
-            secondary={role}
+            secondary={t('TICKETS_PURCHASED_COUNT', { count: ticketsPurchased })}
             primaryTypographyProps={{ noWrap: true, typography: 'subtitle1' }}
             secondaryTypographyProps={{
               mt: 0.5,
               component: 'span',
-              typography: 'body2',
-              color: 'text.secondary',
+              typography: 'caption',
+              color: 'text.disabled',
               noWrap: true,
             }}
           />
         </Stack>
 
-        <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mb: 2.5 }}>
-          <Label
-            variant="soft"
-            color={
-              (status === 'active' && 'success') ||
-              (status === 'pending' && 'warning') ||
-              (status === 'banned' && 'error') ||
-              'default'
-            }
-          >
-            {t(status.toUpperCase())}
-          </Label>
-          <Label variant="soft" color={isVerified ? 'info' : 'default'}>
-            {isVerified ? t('VERIFIED') : t('UNVERIFIED')}
-          </Label>
-        </Stack>
-
         <Divider sx={{ borderStyle: 'dashed', mb: 2.5 }} />
 
         <Stack spacing={1.75}>
-          <InfoRow icon="solar:letter-bold" label={t('EMAIL')} value={email} />
           <InfoRow icon="solar:phone-bold" label={t('PHONE')} value={phoneNumber} />
-          <InfoRow icon="solar:buildings-2-bold" label={t('COMPANY')} value={company} />
-          <InfoRow
-            icon="solar:map-point-bold"
-            label={t('LOCATION')}
-            value={[city, country].filter(Boolean).join(', ')}
-          />
+          <InfoRow icon="solar:map-point-bold" label={t('ADDRESS')} value={address} />
         </Stack>
       </Card>
 
@@ -195,14 +159,14 @@ export default function StaffCard({ staff, onView, onDelete }: Props) {
 
 // ----------------------------------------------------------------------
 
-type StaffCardListProps = {
-  staff: IUserItem[];
-  onView: (id: string) => void;
+type CustomerCardListProps = {
+  customers: ICustomerItem[];
   onDelete: (id: string) => void;
+  onView: (id: string) => void;
 };
 
-export function StaffCardList({ staff, onView, onDelete }: StaffCardListProps) {
-  if (!staff.length) {
+export function CustomerCardList({ customers, onDelete, onView }: CustomerCardListProps) {
+  if (!customers.length) {
     return null;
   }
 
@@ -221,10 +185,10 @@ export function StaffCardList({ staff, onView, onDelete }: StaffCardListProps) {
           theme.palette.mode === 'light' ? 'grey.100' : 'background.neutral',
       }}
     >
-      {staff.map((item) => (
-        <StaffCard
+      {customers.map((item) => (
+        <CustomerCard
           key={item.id}
-          staff={item}
+          customer={item}
           onView={() => onView(item.id)}
           onDelete={() => onDelete(item.id)}
         />

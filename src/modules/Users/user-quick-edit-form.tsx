@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
@@ -52,6 +53,7 @@ const emptyForm: FormState = {
 };
 
 export default function UserQuickEditForm({ currentUser, open, onClose }: Props) {
+  const { t } = useTranslation('index');
   const { enqueueSnackbar } = useSnackbar();
   const [form, setForm] = useState<FormState>(emptyForm);
   const [submitting, setSubmitting] = useState(false);
@@ -87,7 +89,7 @@ export default function UserQuickEditForm({ currentUser, open, onClose }: Props)
     try {
       await new Promise((resolve) => setTimeout(resolve, 500));
       onClose();
-      enqueueSnackbar('Update success!');
+      enqueueSnackbar(t('UPDATE_SUCCESS'));
     } catch (error) {
       console.error(error);
     } finally {
@@ -106,11 +108,11 @@ export default function UserQuickEditForm({ currentUser, open, onClose }: Props)
       }}
     >
       <form onSubmit={handleSubmit}>
-        <DialogTitle>Quick Update</DialogTitle>
+        <DialogTitle>{t('QUICK_UPDATE')}</DialogTitle>
 
         <DialogContent>
           <Alert variant="outlined" severity="info" sx={{ mb: 3 }}>
-            Account is waiting for confirmation
+            {t('ACCOUNT_WAITING_CONFIRMATION')}
           </Alert>
 
           <Box
@@ -122,20 +124,20 @@ export default function UserQuickEditForm({ currentUser, open, onClose }: Props)
               sm: 'repeat(2, 1fr)',
             }}
           >
-            <TextField select name="status" label="Status" value={form.status} onChange={setField('status')}>
+            <TextField select name="status" label={t('STATUS')} value={form.status} onChange={setField('status')}>
               {USER_STATUS_OPTIONS.map((status) => (
                 <MenuItem key={status.value} value={status.value}>
-                  {status.label}
+                  {t(status.value.toUpperCase())}
                 </MenuItem>
               ))}
             </TextField>
 
             <Box sx={{ display: { xs: 'none', sm: 'block' } }} />
 
-            <TextField name="name" label="Full Name" value={form.name} onChange={setField('name')} required />
+            <TextField name="name" label={t('FULL_NAME')} value={form.name} onChange={setField('name')} required />
             <TextField
               name="email"
-              label="Email Address"
+              label={t('EMAIL_ADDRESS')}
               type="email"
               value={form.email}
               onChange={setField('email')}
@@ -143,28 +145,28 @@ export default function UserQuickEditForm({ currentUser, open, onClose }: Props)
             />
             <TextField
               name="phoneNumber"
-              label="Phone Number"
+              label={t('PHONE_NUMBER')}
               value={form.phoneNumber}
               onChange={setField('phoneNumber')}
               required
             />
-            <TextField name="country" label="Country" value={form.country} onChange={setField('country')} required />
-            <TextField name="state" label="State/Region" value={form.state} onChange={setField('state')} required />
-            <TextField name="city" label="City" value={form.city} onChange={setField('city')} required />
-            <TextField name="address" label="Address" value={form.address} onChange={setField('address')} required />
-            <TextField name="zipCode" label="Zip/Code" value={form.zipCode} onChange={setField('zipCode')} />
-            <TextField name="company" label="Company" value={form.company} onChange={setField('company')} required />
+            <TextField name="country" label={t('COUNTRY')} value={form.country} onChange={setField('country')} required />
+            <TextField name="state" label={t('STATE_REGION')} value={form.state} onChange={setField('state')} required />
+            <TextField name="city" label={t('CITY')} value={form.city} onChange={setField('city')} required />
+            <TextField name="address" label={t('ADDRESS')} value={form.address} onChange={setField('address')} required />
+            <TextField name="zipCode" label={t('ZIP_CODE')} value={form.zipCode} onChange={setField('zipCode')} />
+            <TextField name="company" label={t('COMPANY')} value={form.company} onChange={setField('company')} required />
             <TextField
               select
               name="role"
-              label="Role"
+              label={t('ROLE')}
               value={form.role}
               onChange={setField('role')}
               required
               SelectProps={{ displayEmpty: true }}
             >
               <MenuItem value="">
-                <em>Select role</em>
+                <em>{t('SELECT_ROLE')}</em>
               </MenuItem>
               {_roles.map((role) => (
                 <MenuItem key={role} value={role}>
@@ -177,11 +179,11 @@ export default function UserQuickEditForm({ currentUser, open, onClose }: Props)
 
         <DialogActions>
           <Button variant="outlined" onClick={onClose}>
-            Cancel
+            {t('CANCEL')}
           </Button>
 
           <Button type="submit" variant="contained" disabled={submitting}>
-            {submitting ? 'Updating...' : 'Update'}
+            {submitting ? t('UPDATING') : t('UPDATE')}
           </Button>
         </DialogActions>
       </form>

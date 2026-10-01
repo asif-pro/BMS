@@ -84,7 +84,7 @@ export function useNavData() {
           },
           {
             title: t('NAV_CUSTOMERS'),
-            path: paths.dashboard.customers,
+            path: paths.dashboard.customers.root,
             icon: ICONS.customers,
           },
           {

@@ -18,15 +18,18 @@ import { paths } from '@/routes/paths';
 import { fDate, fDateTime, fTime } from '@/utils/format-time';
 
 import Label from '@/components/label';
+import Image from '@/components/image';
 import Iconify from '@/components/iconify';
 import EmptyContent from '@/components/empty-content';
 import CustomBreadcrumbs from '@/components/custom-breadcrumbs';
+import { RouterLink } from '@/routes/components';
 
 import { ticketPaths } from './paths';
 import { _tickets } from './_mock';
 import TicketSeatMap from './ticket-seat-map';
 import TripTraceMap, { TripTraceFullscreen } from './trip-trace-map';
 import type { TicketItem, TicketStatus } from './types';
+import { getVehicleById } from '@/modules/Vehicles/_mock';
 
 // ----------------------------------------------------------------------
 
@@ -51,12 +54,12 @@ function formatKilometers(value: number) {
   return `${(Math.round(value * 10) / 10).toFixed(1)} KM`;
 }
 
-const AMENITIES: { label: string; service: string; icon: string }[] = [
-  { label: 'Wi-Fi', service: 'Wi-Fi', icon: 'solar:wi-fi-bold' },
-  { label: 'AC', service: 'Air conditioned', icon: 'solar:snowflake-bold' },
-  { label: 'Food', service: 'Snacks', icon: 'solar:chef-hat-bold' },
-  { label: 'Toilet', service: 'Onboard toilet', icon: 'ph:toilet-bold' },
-  { label: 'Extra luggage', service: 'Extra luggage', icon: 'solar:suitcase-bold' },
+const AMENITIES: { key: string; service: string; icon: string }[] = [
+  { key: 'AMENITY_WIFI', service: 'Wi-Fi', icon: 'solar:wi-fi-bold' },
+  { key: 'AMENITY_AC', service: 'Air conditioned', icon: 'solar:snowflake-bold' },
+  { key: 'AMENITY_FOOD', service: 'Snacks', icon: 'solar:chef-hat-bold' },
+  { key: 'AMENITY_TOILET', service: 'Onboard toilet', icon: 'ph:toilet-bold' },
+  { key: 'AMENITY_EXTRA_LUGGAGE', service: 'Extra luggage', icon: 'solar:suitcase-bold' },
 ];
 
 // ----------------------------------------------------------------------
@@ -104,6 +107,9 @@ const DetailsCard = forwardRef<HTMLDivElement, { ticket: TicketItem }>(function 
   const { t } = useTranslation('index');
   const ticketsBooked = ticket.bookers.length;
   const ticketsRemaining = Math.max(ticket.seatCapacity - ticketsBooked, 0);
+  const totalEarnings = ticket.seats
+    .filter((seat) => seat.status === 'booked')
+    .reduce((sum, seat) => sum + seat.price, 0);
 
   const statusLabel: Record<TicketStatus, string> = {
     upcoming: t('UPCOMING'),
@@ -173,13 +179,48 @@ const DetailsCard = forwardRef<HTMLDivElement, { ticket: TicketItem }>(function 
         </Stack>
 
         <Box sx={{ flexShrink: 0 }}>
-          <DetailItem
-            icon="solar:bus-bold"
-            color="info.main"
-            label={ticket.busModel}
-            value={ticket.busNumber}
-            align="right"
-          />
+          <Tooltip
+            arrow
+            placement="top-end"
+            enterDelay={200}
+            leaveDelay={100}
+            title={
+              <Box sx={{ p: 0.5, width: 220 }}>
+                <Image
+                  alt={ticket.busModel}
+                  src={getVehicleById(ticket.vehicleId)?.coverUrl || ticket.images[0]}
+                  ratio="16/10"
+                  sx={{ borderRadius: 1 }}
+                />
+              </Box>
+            }
+            componentsProps={{
+              tooltip: {
+                sx: {
+                  p: 0,
+                  bgcolor: 'background.paper',
+                  boxShadow: (theme: any) => theme.customShadows.dropdown,
+                  maxWidth: 'none',
+                },
+              },
+              arrow: {
+                sx: {
+                  color: 'background.paper',
+                },
+              },
+            }}
+          >
+            <Box component="span" sx={{ display: 'inline-flex' }}>
+              <DetailItem
+                icon="solar:bus-bold"
+                color="info.main"
+                label={ticket.busModel}
+                value={ticket.busNumber}
+                align="right"
+                href={paths.dashboard.vehicles.details(ticket.vehicleId)}
+              />
+            </Box>
+          </Tooltip>
         </Box>
       </Stack>
 
@@ -225,6 +266,12 @@ const DetailsCard = forwardRef<HTMLDivElement, { ticket: TicketItem }>(function 
           label={t('TICKETS_REMAINING')}
           value={String(ticketsRemaining)}
         />
+        <DetailItem
+          icon="solar:wad-of-money-bold"
+          color="success.main"
+          label={t('TOTAL_EARNINGS')}
+          value={`৳${totalEarnings.toLocaleString('en-BD')}`}
+        />
       </Box>
 
       <TripAmenities services={ticket.services} />
@@ -242,7 +289,7 @@ function TripAmenities({ services }: { services: string[] }) {
       component="ul"
       direction="row"
       spacing={1}
-      aria-label="On board"
+      aria-label={t('ON_BOARD')}
       sx={{
         listStyle: 'none',
         p: 0,
@@ -255,7 +302,8 @@ function TripAmenities({ services }: { services: string[] }) {
     >
       {AMENITIES.map((amenity) => {
         const available = services.includes(amenity.service);
-        const title = available ? amenity.label : `${amenity.label} ${t('UNAVAILABLE')}`;
+        const label = t(amenity.key);
+        const title = available ? label : `${label} ${t('UNAVAILABLE')}`;
 
         return (
           <Box component="li" key={amenity.service} sx={{ display: 'flex' }}>
@@ -315,6 +363,7 @@ function DetailItem({
   value,
   sub,
   align = 'left',
+  href,
 }: {
   icon: string;
   color: string;
@@ -322,9 +371,10 @@ function DetailItem({
   value: string;
   sub?: string;
   align?: 'left' | 'right';
+  href?: string;
 }) {
-  return (
-    <Stack direction="row" spacing={1.25} alignItems="flex-start" sx={{ minWidth: 0 }}>
+  const content = (
+    <>
       <Iconify icon={icon} width={20} sx={{ color, mt: 0.25, flexShrink: 0 }} />
       <Box sx={{ minWidth: 0, textAlign: align }}>
         <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
@@ -337,6 +387,38 @@ function DetailItem({
           </Typography>
         )}
       </Box>
+    </>
+  );
+
+  if (href) {
+    return (
+      <Stack
+        component={RouterLink}
+        href={href}
+        direction="row"
+        spacing={1.25}
+        alignItems="flex-start"
+        sx={{
+          minWidth: 0,
+          color: 'inherit',
+          textDecoration: 'none',
+          cursor: 'pointer',
+          borderRadius: 1,
+          transition: (theme) => theme.transitions.create(['color', 'opacity']),
+          '&:hover': {
+            color: 'primary.main',
+            '& .MuiTypography-caption': { color: 'primary.main' },
+          },
+        }}
+      >
+        {content}
+      </Stack>
+    );
+  }
+
+  return (
+    <Stack direction="row" spacing={1.25} alignItems="flex-start" sx={{ minWidth: 0 }}>
+      {content}
     </Stack>
   );
 }

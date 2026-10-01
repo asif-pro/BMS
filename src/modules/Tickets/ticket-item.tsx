@@ -30,7 +30,7 @@ function ticketDistance(id: string) {
 
 export default function TicketItem({ ticket }: Props) {
   const { t } = useTranslation('index');
-  const { id, name, images, bookers, available, status, busNumber, driverName } = ticket;
+  const { id, name, images, bookers, available, status, busNumber, driverName, seatCapacity } = ticket;
 
   const renderImages = (
     <Stack
@@ -109,8 +109,8 @@ export default function TicketItem({ ticket }: Props) {
       {renderSchedule('solar:map-point-bold', 'success.main', available.endDate)}
 
       <Stack spacing={1} direction="row" alignItems="center" sx={{ typography: 'body2', minWidth: 0 }}>
-        <Iconify icon="solar:users-group-rounded-bold" sx={{ color: 'primary.main', flexShrink: 0 }} />
-        {bookers.length} {t('BOOKED')}
+        <Iconify icon="solar:ticket-bold" sx={{ color: 'primary.main', flexShrink: 0 }} />
+        {bookers.length}/{seatCapacity}
       </Stack>
 
       <Stack
@@ -120,7 +120,7 @@ export default function TicketItem({ ticket }: Props) {
         sx={{ typography: 'body2', minWidth: 0, textTransform: 'capitalize' }}
       >
         <Iconify icon="solar:flag-bold" sx={{ color: 'warning.main', flexShrink: 0 }} />
-        {status === 'active' ? t('ACTIVE') : status === 'routing' ? t('ROUTING') : status === 'upcoming' ? t('UPCOMING') : status === 'canceled' ? t('CANCELLED') : status}
+        {status === 'active' ? t('ACTIVE') : status === 'routing' ? t('ROUTING') : status === 'upcoming' ? t('UPCOMING') : status === 'canceled' ? t('CANCELLED') : status === 'completed' ? t('COMPLETED') : status}
       </Stack>
     </Box>
   );

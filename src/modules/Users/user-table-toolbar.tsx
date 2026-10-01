@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import Stack from '@mui/material/Stack';
 import MenuItem from '@mui/material/MenuItem';
@@ -25,6 +26,7 @@ type Props = {
 };
 
 export default function UserTableToolbar({ filters, onFilters, roleOptions }: Props) {
+  const { t } = useTranslation('index');
   const popover = usePopover();
 
   const handleFilterName = useCallback(
@@ -64,13 +66,13 @@ export default function UserTableToolbar({ filters, onFilters, roleOptions }: Pr
             width: { xs: 1, md: 200 },
           }}
         >
-          <InputLabel>Role</InputLabel>
+          <InputLabel>{t('ROLE')}</InputLabel>
 
           <Select
             multiple
             value={filters.role}
             onChange={handleFilterRole}
-            input={<OutlinedInput label="Role" />}
+            input={<OutlinedInput label={t('ROLE')} />}
             renderValue={(selected) => selected.map((value) => value).join(', ')}
             MenuProps={{
               PaperProps: {
@@ -92,7 +94,7 @@ export default function UserTableToolbar({ filters, onFilters, roleOptions }: Pr
             fullWidth
             value={filters.name}
             onChange={handleFilterName}
-            placeholder="Search..."
+            placeholder={t('SEARCH_PLACEHOLDER')}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -120,7 +122,7 @@ export default function UserTableToolbar({ filters, onFilters, roleOptions }: Pr
           }}
         >
           <Iconify icon="solar:printer-minimalistic-bold" />
-          Print
+          {t('PRINT')}
         </MenuItem>
 
         <MenuItem
@@ -129,7 +131,7 @@ export default function UserTableToolbar({ filters, onFilters, roleOptions }: Pr
           }}
         >
           <Iconify icon="solar:import-bold" />
-          Import
+          {t('IMPORT')}
         </MenuItem>
 
         <MenuItem
@@ -138,7 +140,7 @@ export default function UserTableToolbar({ filters, onFilters, roleOptions }: Pr
           }}
         >
           <Iconify icon="solar:export-bold" />
-          Export
+          {t('EXPORT')}
         </MenuItem>
       </CustomPopover>
     </>

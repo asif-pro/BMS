@@ -35,7 +35,11 @@ export const paths = {
       maintenance: '/vehicles/maintenance',
     },
     terminals: '/terminals',
-    customers: '/customers',
+    customers: {
+      root: '/customers',
+      list: '/customers',
+      details: (id: string) => `/customers/${id}`,
+    },
     users: {
       root: '/dashboard/staff',
       staff: '/dashboard/staff/list',
@@ -48,6 +52,7 @@ export const paths = {
       root: '/dashboard/staff',
       list: '/dashboard/staff/list',
       new: '/dashboard/staff/new',
+      details: (id: string) => `/dashboard/staff/${id}`,
       edit: (id: string) => `/dashboard/staff/${id}/edit`,
       profile: '/settings',
       account: '/settings',

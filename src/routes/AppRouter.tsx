@@ -13,7 +13,10 @@ import VehicleLayoutView from '@/modules/Vehicles/vehicle-layout-view';
 import VehicleLayoutDetailsView from '@/modules/Vehicles/vehicle-layout-details-view';
 import UserListView from '@/modules/Users/user-list-view';
 import UserCreateView from '@/modules/Users/user-create-view';
-import UserEditView from '@/modules/Users/user-edit-view';
+import UserDetailsView from '@/modules/Users/user-details-view';
+import CustomerListView from '@/modules/Customers/customer-list-view';
+import CustomerDetailsView from '@/modules/Customers/customer-details-view';
+import BookingListView from '@/modules/Bookings/booking-list-view';
 import { paths } from './paths';
 
 const AppRouter = () => {
@@ -30,7 +33,11 @@ const AppRouter = () => {
         { path: 'dashboard/staff/new', element: <UserCreateView /> },
         { path: 'dashboard/user/list', element: <Navigate to={paths.dashboard.user.list} replace /> },
         { path: 'dashboard/user/new', element: <Navigate to={paths.dashboard.user.new} replace /> },
-        { path: 'dashboard/staff/:id/edit', element: <UserEditView /> },
+        {
+          path: 'dashboard/staff/:id/edit',
+          element: <UserDetailsView />,
+        },
+        { path: 'dashboard/staff/:id', element: <UserDetailsView /> },
         { path: 'analytics', element: <PageHeading title="ANALYTICS" /> },
         { path: 'accounts', element: <PageHeading title="ACCOUNTS" /> },
         {
@@ -52,7 +59,7 @@ const AppRouter = () => {
             { path: 'quick', element: <QuickTicketView /> },
           ],
         },
-        { path: 'bookings', element: <PageHeading title="BOOKINGS" /> },
+        { path: 'bookings', element: <BookingListView /> },
         {
           path: 'vehicles',
           element: <Outlet />,
@@ -68,7 +75,14 @@ const AppRouter = () => {
           ],
         },
         { path: 'terminals', element: <PageHeading title="TERMINALS" /> },
-        { path: 'customers', element: <PageHeading title="CUSTOMERS" /> },
+        {
+          path: 'customers',
+          element: <Outlet />,
+          children: [
+            { index: true, element: <CustomerListView /> },
+            { path: ':id', element: <CustomerDetailsView /> },
+          ],
+        },
         {
           path: 'users',
           element: <Outlet />,

@@ -1,20 +1,13 @@
 import { addDays, set, subDays } from 'date-fns';
 
+import { _vehicles } from '@/modules/Vehicles/_mock';
+
 import { SEAT_LAYOUTS, type LayoutId } from './seat-layouts';
 import type { TicketItem, TicketOperator, TicketPassenger, TicketSeat, TicketSeatColumn, TicketStatus } from './types';
 
 // ----------------------------------------------------------------------
 
 const avatar = (index: number) => `/assets/images/avatar/avatar_${(index % 12) + 1}.jpg`;
-
-const BUS_MODELS = [
-  'Scania K250',
-  'Mercedes-Benz eCitaro',
-  'Volvo B11R',
-  'Hino RN8',
-  "MAN Lion's Coach",
-  'Yutong ZK6122',
-];
 
 const BUS_IMAGES = [
   '/assets/images/buses/ac-coach.jpg',
@@ -250,6 +243,7 @@ export const _tickets: TicketItem[] = NAMES.map((name, index) => {
     routeEnd;
   const driver = OPERATORS[index];
   const bookers = PASSENGERS.slice(0, (index % 6) + 3);
+  const vehicle = _vehicles[index % _vehicles.length];
 
   return {
     id: `trip-${index + 1}`,
@@ -270,8 +264,9 @@ export const _tickets: TicketItem[] = NAMES.map((name, index) => {
       (index === 2 && OPERATORS.slice(2, 5)) ||
       OPERATORS.slice(index % 6, (index % 6) + 2),
     status: STATUSES[index % STATUSES.length],
-    busModel: BUS_MODELS[index % BUS_MODELS.length],
-    busNumber: `BA-${String(11 + (index % 20)).padStart(2, '0')}-${2400 + index * 13}`,
+    busModel: vehicle.model,
+    busNumber: vehicle.plateNumber,
+    vehicleId: vehicle.id,
     driverName: driver.name,
     driverAvatarUrl: driver.avatarUrl,
     seatCapacity: 40,

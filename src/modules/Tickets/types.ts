@@ -65,6 +65,7 @@ export type TicketItem = {
   status: TicketStatus;
   busModel: string;
   busNumber: string;
+  vehicleId: string;
   driverName: string;
   driverAvatarUrl: string;
   seatCapacity: number;

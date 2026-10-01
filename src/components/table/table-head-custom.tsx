@@ -5,6 +5,7 @@ import TableHead from '@mui/material/TableHead';
 import TableCell from '@mui/material/TableCell';
 import { Theme, SxProps } from '@mui/material/styles';
 import TableSortLabel from '@mui/material/TableSortLabel';
+import { useTranslation } from 'react-i18next';
 
 // ----------------------------------------------------------------------
 
@@ -43,6 +44,8 @@ export default function TableHeadCustom({
   onSelectAllRows,
   sx,
 }: Props) {
+  const { t } = useTranslation('index');
+
   return (
     <TableHead sx={sx}>
       <TableRow>
@@ -72,7 +75,7 @@ export default function TableHeadCustom({
                 direction={orderBy === headCell.id ? order : 'asc'}
                 onClick={() => onSort(headCell.id)}
               >
-                {headCell.label}
+                {headCell.label ? t(headCell.label) : ''}
 
                 {orderBy === headCell.id ? (
                   <Box sx={{ ...visuallyHidden }}>
@@ -81,7 +84,7 @@ export default function TableHeadCustom({
                 ) : null}
               </TableSortLabel>
             ) : (
-              headCell.label
+              headCell.label ? t(headCell.label) : ''
             )}
           </TableCell>
         ))}
