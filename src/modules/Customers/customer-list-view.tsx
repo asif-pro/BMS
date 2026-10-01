@@ -4,11 +4,8 @@ import { useTranslation } from 'react-i18next';
 
 import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
-import Button from '@mui/material/Button';
-import Tooltip from '@mui/material/Tooltip';
 import Container from '@mui/material/Container';
 import TableBody from '@mui/material/TableBody';
-import IconButton from '@mui/material/IconButton';
 import ToggleButton from '@mui/material/ToggleButton';
 import TableContainer from '@mui/material/TableContainer';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
@@ -16,13 +13,10 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { paths } from '@/routes/paths';
 import { useRouter } from '@/routes/hooks';
 
-import { useBoolean } from '@/hooks/use-boolean';
-
 import Iconify from '@/components/iconify';
 import Scrollbar from '@/components/scrollbar';
 import EmptyContent from '@/components/empty-content';
 import { useSnackbar } from '@/components/snackbar';
-import { ConfirmDialog } from '@/components/custom-dialog';
 import CustomBreadcrumbs from '@/components/custom-breadcrumbs';
 import {
   useTable,
@@ -31,7 +25,6 @@ import {
   getComparator,
   TableEmptyRows,
   TableHeadCustom,
-  TableSelectedAction,
   TablePaginationCustom,
 } from '@/components/table';
 
@@ -66,7 +59,6 @@ export default function CustomerListView() {
 
   const table = useTable({ defaultRowsPerPage: 10 });
   const router = useRouter();
-  const confirm = useBoolean();
 
   const [view, setView] = useState<ViewMode>('list');
   const [tableData, setTableData] = useState<ICustomerItem[]>(_customerList);
@@ -121,16 +113,6 @@ export default function CustomerListView() {
     [dataInPage.length, enqueueSnackbar, t, table, tableData]
   );
 
-  const handleDeleteRows = useCallback(() => {
-    const deleteRows = tableData.filter((row) => !table.selected.includes(row.id));
-    enqueueSnackbar(t('DELETE_SUCCESS'));
-    setTableData(deleteRows);
-    table.onUpdatePageDeleteRows({
-      totalRowsInPage: dataInPage.length,
-      totalRowsFiltered: dataFiltered.length,
-    });
-  }, [dataFiltered.length, dataInPage.length, enqueueSnackbar, t, table, tableData]);
-
   const handleViewRow = useCallback(
     (id: string) => {
       router.push(paths.dashboard.customers.details(id));
@@ -139,147 +121,92 @@ export default function CustomerListView() {
   );
 
   return (
-    <>
-      <Container maxWidth={false} disableGutters>
-        <CustomBreadcrumbs
-          heading="CUSTOMERS"
-          links={[
-            { name: 'NAV_DASHBOARD', href: paths.dashboard.root },
-            { name: 'NAV_CUSTOMERS' },
-          ]}
-          action={
-            <ToggleButtonGroup size="small" value={view} exclusive onChange={handleChangeView}>
-              <ToggleButton value="list" aria-label={t('LIST_VIEW')}>
-                <Iconify icon="solar:list-bold" />
-              </ToggleButton>
-              <ToggleButton value="grid" aria-label={t('GRID_VIEW')}>
-                <Iconify icon="mingcute:dot-grid-fill" />
-              </ToggleButton>
-            </ToggleButtonGroup>
-          }
-          sx={{ mb: { xs: 3, md: 5 } }}
-        />
+    <Container maxWidth={false} disableGutters>
+      <CustomBreadcrumbs
+        heading="CUSTOMERS"
+        links={[
+          { name: 'NAV_DASHBOARD', href: paths.dashboard.root },
+          { name: 'NAV_CUSTOMERS' },
+        ]}
+        action={
+          <ToggleButtonGroup size="small" value={view} exclusive onChange={handleChangeView}>
+            <ToggleButton value="list" aria-label={t('LIST_VIEW')}>
+              <Iconify icon="solar:list-bold" />
+            </ToggleButton>
+            <ToggleButton value="grid" aria-label={t('GRID_VIEW')}>
+              <Iconify icon="mingcute:dot-grid-fill" />
+            </ToggleButton>
+          </ToggleButtonGroup>
+        }
+        sx={{ mb: { xs: 3, md: 5 } }}
+      />
 
-        <Card>
-          <CustomerTableToolbar filters={filters} onFilters={handleFilters} />
+      <Card>
+        <CustomerTableToolbar filters={filters} onFilters={handleFilters} />
 
-          {canReset && (
-            <CustomerTableFiltersResult
-              filters={filters}
-              onFilters={handleFilters}
-              onResetFilters={handleResetFilters}
-              results={dataFiltered.length}
-              sx={{ p: 2.5, pt: 0 }}
-            />
-          )}
+        {canReset && (
+          <CustomerTableFiltersResult
+            filters={filters}
+            onFilters={handleFilters}
+            onResetFilters={handleResetFilters}
+            results={dataFiltered.length}
+            sx={{ p: 2.5, pt: 0 }}
+          />
+        )}
 
-          {view === 'list' ? (
-            <TableContainer sx={{ position: 'relative', overflow: 'unset' }}>
-              <TableSelectedAction
-                dense={table.dense}
-                numSelected={table.selected.length}
-                rowCount={dataFiltered.length}
-                onSelectAllRows={(checked) =>
-                  table.onSelectAllRows(
-                    checked,
-                    dataFiltered.map((row) => row.id)
-                  )
-                }
-                action={
-                  <Tooltip title={t('DELETE')}>
-                    <IconButton color="primary" onClick={confirm.onTrue}>
-                      <Iconify icon="solar:trash-bin-trash-bold" />
-                    </IconButton>
-                  </Tooltip>
-                }
-              />
+        {view === 'list' ? (
+          <TableContainer sx={{ position: 'relative', overflow: 'unset' }}>
+            <Scrollbar>
+              <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 800 }}>
+                <TableHeadCustom
+                  order={table.order}
+                  orderBy={table.orderBy}
+                  headLabel={TABLE_HEAD}
+                  rowCount={dataFiltered.length}
+                  onSort={table.onSort}
+                />
 
-              <Scrollbar>
-                <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 800 }}>
-                  <TableHeadCustom
-                    order={table.order}
-                    orderBy={table.orderBy}
-                    headLabel={TABLE_HEAD}
-                    rowCount={dataFiltered.length}
-                    numSelected={table.selected.length}
-                    onSort={table.onSort}
-                    onSelectAllRows={(checked) =>
-                      table.onSelectAllRows(
-                        checked,
-                        dataFiltered.map((row) => row.id)
-                      )
-                    }
+                <TableBody>
+                  {dataInPage.map((row) => (
+                    <CustomerTableRow
+                      key={row.id}
+                      row={row}
+                      onDeleteRow={() => handleDeleteRow(row.id)}
+                      onViewRow={() => handleViewRow(row.id)}
+                    />
+                  ))}
+
+                  <TableEmptyRows
+                    height={denseHeight}
+                    emptyRows={emptyRows(table.page, table.rowsPerPage, dataFiltered.length)}
                   />
 
-                  <TableBody>
-                    {dataInPage.map((row) => (
-                      <CustomerTableRow
-                        key={row.id}
-                        row={row}
-                        selected={table.selected.includes(row.id)}
-                        onSelectRow={() => table.onSelectRow(row.id)}
-                        onDeleteRow={() => handleDeleteRow(row.id)}
-                        onViewRow={() => handleViewRow(row.id)}
-                      />
-                    ))}
-
-                    <TableEmptyRows
-                      height={denseHeight}
-                      emptyRows={emptyRows(table.page, table.rowsPerPage, dataFiltered.length)}
-                    />
-
-                    <TableNoData notFound={notFound} />
-                  </TableBody>
-                </Table>
-              </Scrollbar>
-            </TableContainer>
-          ) : notFound ? (
-            <EmptyContent title="NO_DATA" filled sx={{ py: 10, m: 3 }} />
-          ) : (
-            <CustomerCardList
-              customers={dataInPage}
-              onDelete={handleDeleteRow}
-              onView={handleViewRow}
-            />
-          )}
-
-          <TablePaginationCustom
-            count={dataFiltered.length}
-            page={table.page}
-            rowsPerPage={table.rowsPerPage}
-            onPageChange={table.onChangePage}
-            onRowsPerPageChange={table.onChangeRowsPerPage}
-            dense={view === 'list' ? table.dense : undefined}
-            onChangeDense={view === 'list' ? table.onChangeDense : undefined}
+                  <TableNoData notFound={notFound} />
+                </TableBody>
+              </Table>
+            </Scrollbar>
+          </TableContainer>
+        ) : notFound ? (
+          <EmptyContent title="NO_DATA" filled sx={{ py: 10, m: 3 }} />
+        ) : (
+          <CustomerCardList
+            customers={dataInPage}
+            onDelete={handleDeleteRow}
+            onView={handleViewRow}
           />
-        </Card>
-      </Container>
+        )}
 
-      <ConfirmDialog
-        open={confirm.value}
-        onClose={confirm.onFalse}
-        title={t('DELETE')}
-        content={
-          <span
-            dangerouslySetInnerHTML={{
-              __html: t('DELETE_CONFIRM_MULTIPLE', { count: table.selected.length }),
-            }}
-          />
-        }
-        action={
-          <Button
-            variant="contained"
-            color="error"
-            onClick={() => {
-              handleDeleteRows();
-              confirm.onFalse();
-            }}
-          >
-            {t('DELETE')}
-          </Button>
-        }
-      />
-    </>
+        <TablePaginationCustom
+          count={dataFiltered.length}
+          page={table.page}
+          rowsPerPage={table.rowsPerPage}
+          onPageChange={table.onChangePage}
+          onRowsPerPageChange={table.onChangeRowsPerPage}
+          dense={view === 'list' ? table.dense : undefined}
+          onChangeDense={view === 'list' ? table.onChangeDense : undefined}
+        />
+      </Card>
+    </Container>
   );
 }
 

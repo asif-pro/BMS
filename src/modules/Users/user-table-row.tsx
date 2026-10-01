@@ -3,7 +3,6 @@ import Avatar from '@mui/material/Avatar';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import TableRow from '@mui/material/TableRow';
-import Checkbox from '@mui/material/Checkbox';
 import TableCell from '@mui/material/TableCell';
 import IconButton from '@mui/material/IconButton';
 import ListItemText from '@mui/material/ListItemText';
@@ -22,20 +21,12 @@ import type { IUserItem } from './types';
 // ----------------------------------------------------------------------
 
 type Props = {
-  selected: boolean;
   onViewRow: VoidFunction;
   row: IUserItem;
-  onSelectRow: VoidFunction;
   onDeleteRow: VoidFunction;
 };
 
-export default function UserTableRow({
-  row,
-  selected,
-  onViewRow,
-  onSelectRow,
-  onDeleteRow,
-}: Props) {
+export default function UserTableRow({ row, onViewRow, onDeleteRow }: Props) {
   const { t } = useTranslation('index');
 
   const { name, avatarUrl, company, role, status, email, phoneNumber } = row;
@@ -48,23 +39,12 @@ export default function UserTableRow({
     <>
       <TableRow
         hover
-        selected={selected}
         onClick={onViewRow}
         sx={{
           cursor: 'pointer',
           '& td': { cursor: 'pointer' },
         }}
       >
-        <TableCell
-          padding="checkbox"
-          onClick={(event) => {
-            event.stopPropagation();
-          }}
-          sx={{ cursor: 'default !important' }}
-        >
-          <Checkbox checked={selected} onClick={onSelectRow} />
-        </TableCell>
-
         <TableCell sx={{ display: 'flex', alignItems: 'center' }}>
           <Avatar alt={name} src={avatarUrl} sx={{ mr: 2 }} />
 
