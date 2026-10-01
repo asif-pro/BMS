@@ -12,6 +12,7 @@ export type IBookingTripStatus = 'taken' | 'cancelled' | 'returned' | 'travellin
 
 export type IBookingItem = {
   id: string;
+  tripId: string;
   route: string;
   busNumber: string;
   busModel: string;

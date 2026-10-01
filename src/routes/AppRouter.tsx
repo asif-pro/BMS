@@ -20,6 +20,7 @@ import BookingListView from '@/modules/Bookings/booking-list-view';
 import AnalyticsView from '@/modules/Analytics/analytics-view';
 import AccountsView from '@/modules/Accounts/accounts-view';
 import MaintenanceListView from '@/modules/Maintenance/maintenance-list-view';
+import OrganizationListView from '@/modules/Organizations/organization-list-view';
 import { paths } from './paths';
 
 const AppRouter = () => {
@@ -94,6 +95,7 @@ const AppRouter = () => {
             { path: 'staff', element: <Navigate to={paths.dashboard.user.list} replace /> },
           ],
         },
+        { path: 'organizations', element: <OrganizationListView /> },
         { path: 'settings', element: <Settings /> },
         { path: 'report', element: <PageHeading title="REPORT" /> },
         { path: 'help', element: <PageHeading title="HELP_AND_SUPPORT" /> },

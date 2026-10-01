@@ -1,11 +1,15 @@
 import { useTranslation } from 'react-i18next';
 
 import Box from '@mui/material/Box';
+import Link from '@mui/material/Link';
 import Avatar from '@mui/material/Avatar';
 import Stack from '@mui/material/Stack';
 import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
 import ListItemText from '@mui/material/ListItemText';
+
+import { paths } from '@/routes/paths';
+import { RouterLink } from '@/routes/components';
 
 import { fDate, fTime } from '@/utils/format-time';
 
@@ -45,6 +49,7 @@ export default function BookingTableRow({ row }: Props) {
   const { t } = useTranslation('index');
 
   const {
+    tripId,
     route,
     busNumber,
     busModel,
@@ -73,9 +78,19 @@ export default function BookingTableRow({ row }: Props) {
     <TableRow hover>
       <TableCell>
         <ListItemText
-          primary={route}
+          primary={
+            <Link
+              component={RouterLink}
+              href={`${paths.dashboard.trips.root}/${tripId}`}
+              color="inherit"
+              underline="hover"
+              sx={{ typography: 'body2' }}
+            >
+              {route}
+            </Link>
+          }
           secondary={`${busNumber} · ${busModel}`}
-          primaryTypographyProps={{ typography: 'body2', noWrap: true }}
+          primaryTypographyProps={{ component: 'div', noWrap: true }}
           secondaryTypographyProps={{
             component: 'span',
             typography: 'caption',

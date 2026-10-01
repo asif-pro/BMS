@@ -166,25 +166,14 @@ export default function UserListView() {
           { name: 'LIST' },
         ]}
         action={
-          <Stack direction="row" spacing={1.5} alignItems="center">
-            <ToggleButtonGroup size="small" value={view} exclusive onChange={handleChangeView}>
-              <ToggleButton value="list" aria-label={t('LIST_VIEW')}>
-                <Iconify icon="solar:list-bold" />
-              </ToggleButton>
-              <ToggleButton value="grid" aria-label={t('GRID_VIEW')}>
-                <Iconify icon="mingcute:dot-grid-fill" />
-              </ToggleButton>
-            </ToggleButtonGroup>
-
-            <Button
-              component={RouterLink}
-              href={paths.dashboard.user.new}
-              variant="contained"
-              startIcon={<Iconify icon="mingcute:add-line" />}
-            >
-              {t('ADD_STAFF')}
-            </Button>
-          </Stack>
+          <Button
+            component={RouterLink}
+            href={paths.dashboard.user.new}
+            variant="contained"
+            startIcon={<Iconify icon="mingcute:add-line" />}
+          >
+            {t('ADD_STAFF')}
+          </Button>
         }
         sx={{
           mb: { xs: 3, md: 5 },
@@ -202,40 +191,67 @@ export default function UserListView() {
       />
 
       <Card>
-        <Tabs
-          value={filters.status}
-          onChange={handleFilterStatus}
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+          spacing={2}
           sx={{
-            px: 2.5,
+            pr: 2.5,
             boxShadow: (theme) => `inset 0 -2px 0 0 ${alpha(theme.palette.grey[500], 0.08)}`,
           }}
         >
-          {STATUS_OPTIONS.map((tab) => (
-            <Tab
-              key={tab.value}
-              iconPosition="end"
-              value={tab.value}
-              label={t(tab.label)}
-              icon={
-                <Label
-                  variant={
-                    ((tab.value === 'all' || tab.value === filters.status) && 'filled') || 'soft'
-                  }
-                  color={
-                    (tab.value === 'active' && 'success') ||
-                    (tab.value === 'pending' && 'warning') ||
-                    (tab.value === 'banned' && 'error') ||
-                    'default'
-                  }
-                >
-                  {['active', 'pending', 'banned', 'rejected'].includes(tab.value)
-                    ? tableData.filter((user) => user.status === tab.value).length
-                    : tableData.length}
-                </Label>
-              }
-            />
-          ))}
-        </Tabs>
+          <Tabs
+            value={filters.status}
+            onChange={handleFilterStatus}
+            sx={{
+              px: 2.5,
+              flexGrow: 1,
+              minWidth: 0,
+            }}
+          >
+            {STATUS_OPTIONS.map((tab) => (
+              <Tab
+                key={tab.value}
+                iconPosition="end"
+                value={tab.value}
+                label={t(tab.label)}
+                icon={
+                  <Label
+                    variant={
+                      ((tab.value === 'all' || tab.value === filters.status) && 'filled') || 'soft'
+                    }
+                    color={
+                      (tab.value === 'active' && 'success') ||
+                      (tab.value === 'pending' && 'warning') ||
+                      (tab.value === 'banned' && 'error') ||
+                      'default'
+                    }
+                  >
+                    {['active', 'pending', 'banned', 'rejected'].includes(tab.value)
+                      ? tableData.filter((user) => user.status === tab.value).length
+                      : tableData.length}
+                  </Label>
+                }
+              />
+            ))}
+          </Tabs>
+
+          <ToggleButtonGroup
+            size="small"
+            value={view}
+            exclusive
+            onChange={handleChangeView}
+            sx={{ flexShrink: 0 }}
+          >
+            <ToggleButton value="list" aria-label={t('LIST_VIEW')}>
+              <Iconify icon="solar:list-bold" />
+            </ToggleButton>
+            <ToggleButton value="grid" aria-label={t('GRID_VIEW')}>
+              <Iconify icon="mingcute:dot-grid-fill" />
+            </ToggleButton>
+          </ToggleButtonGroup>
+        </Stack>
 
         <UserTableToolbar filters={filters} onFilters={handleFilters} roleOptions={_roles} />
 

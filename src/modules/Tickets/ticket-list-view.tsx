@@ -9,6 +9,7 @@ import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import TableBody from '@mui/material/TableBody';
 import Container from '@mui/material/Container';
+import { alpha } from '@mui/material/styles';
 import ToggleButton from '@mui/material/ToggleButton';
 import TableContainer from '@mui/material/TableContainer';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
@@ -236,27 +237,16 @@ export default function TicketListView() {
           { name: 'NAV_TRIPS' },
         ]}
         action={
-          <Stack direction="row" spacing={1.5} alignItems="center">
-            <ToggleButtonGroup size="small" value={view} exclusive onChange={handleChangeView}>
-              <ToggleButton value="list" aria-label={t('LIST_VIEW')}>
-                <Iconify icon="solar:list-bold" />
-              </ToggleButton>
-              <ToggleButton value="grid" aria-label={t('GRID_VIEW')}>
-                <Iconify icon="mingcute:dot-grid-fill" />
-              </ToggleButton>
-            </ToggleButtonGroup>
-
-            <Button
-              component={RouterLink}
-              href={ticketPaths.create}
-              size="large"
-              variant="contained"
-              startIcon={<Iconify icon="mingcute:add-line" />}
-              sx={{ minWidth: 180 }}
-            >
-              {t('NEW_TRIP')}
-            </Button>
-          </Stack>
+          <Button
+            component={RouterLink}
+            href={ticketPaths.create}
+            size="large"
+            variant="contained"
+            startIcon={<Iconify icon="mingcute:add-line" />}
+            sx={{ minWidth: 180 }}
+          >
+            {t('NEW_TRIP')}
+          </Button>
         }
         sx={{
           mb: { xs: 3, md: 5 },
@@ -274,36 +264,65 @@ export default function TicketListView() {
         {canReset && renderResults}
       </Stack>
 
-      <Tabs
-        value={status}
-        onChange={handleFilterStatus}
-        sx={{
-          mb: { xs: 3, md: 5 },
-        }}
+      <Stack
+        direction="row"
+        alignItems="center"
+        justifyContent="space-between"
+        spacing={2}
+        sx={{ mb: { xs: 3, md: 5 } }}
       >
-        {statusOptions.map((tab) => (
-          <Tab
-            key={tab.value}
-            iconPosition="end"
-            value={tab.value}
-            label={tab.label}
-            icon={
-              <Label
-                variant={((tab.value === 'all' || tab.value === status) && 'filled') || 'soft'}
-                color={tab.color}
-              >
-                {tab.value === 'all'
-                  ? _tickets.length
-                  : _tickets.filter((ticket) => ticket.status === tab.value).length}
-              </Label>
-            }
-            sx={{ textTransform: 'capitalize' }}
-          />
-        ))}
-      </Tabs>
+        <Tabs
+          value={status}
+          onChange={handleFilterStatus}
+          sx={{
+            flexGrow: 1,
+            minWidth: 0,
+          }}
+        >
+          {statusOptions.map((tab) => (
+            <Tab
+              key={tab.value}
+              iconPosition="end"
+              value={tab.value}
+              label={tab.label}
+              icon={
+                <Label
+                  variant={((tab.value === 'all' || tab.value === status) && 'filled') || 'soft'}
+                  color={tab.color}
+                >
+                  {tab.value === 'all'
+                    ? _tickets.length
+                    : _tickets.filter((ticket) => ticket.status === tab.value).length}
+                </Label>
+              }
+              sx={{ textTransform: 'capitalize' }}
+            />
+          ))}
+        </Tabs>
+
+        <ToggleButtonGroup
+          size="small"
+          value={view}
+          exclusive
+          onChange={handleChangeView}
+          sx={{ flexShrink: 0 }}
+        >
+          <ToggleButton value="list" aria-label={t('LIST_VIEW')}>
+            <Iconify icon="solar:list-bold" />
+          </ToggleButton>
+          <ToggleButton value="grid" aria-label={t('GRID_VIEW')}>
+            <Iconify icon="mingcute:dot-grid-fill" />
+          </ToggleButton>
+        </ToggleButtonGroup>
+      </Stack>
 
       {view === 'list' ? (
-        <Card>
+        <Card
+          sx={{
+            overflow: 'hidden',
+            boxShadow: (theme) => theme.customShadows.z8,
+          }}
+        >
           <TableContainer sx={{ position: 'relative', overflow: 'unset' }}>
             <Scrollbar>
               <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 960 }}>
@@ -313,6 +332,19 @@ export default function TicketListView() {
                   headLabel={TABLE_HEAD}
                   rowCount={dataFiltered.length}
                   onSort={table.onSort}
+                  sx={{
+                    position: 'relative',
+                    zIndex: 1,
+                    bgcolor: 'background.neutral',
+                    boxShadow: (theme) =>
+                      `inset 0 1px 0 0 ${alpha(theme.palette.grey[500], 0.16)}, 0 4px 10px -4px ${alpha(
+                        theme.palette.grey[500],
+                        0.24
+                      )}`,
+                    '& .MuiTableCell-head': {
+                      bgcolor: 'background.neutral',
+                    },
+                  }}
                 />
 
                 <TableBody>

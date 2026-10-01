@@ -45,6 +45,7 @@ export const paths = {
       staff: '/dashboard/staff/list',
       list: '/dashboard/staff/list',
     },
+    organizations: '/organizations',
     settings: '/settings',
     report: '/report',
     help: '/help',

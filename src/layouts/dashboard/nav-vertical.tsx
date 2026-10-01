@@ -50,7 +50,7 @@ export default function NavVertical({ openNav, onCloseNav }: Props) {
         },
       }}
     >
-      <Logo sx={{ mt: 3, ml: 4, mb: 1 }} />
+      <Logo variant="stacked" sx={{ mt: 2, ml: 3, mb: 1 }} />
 
       <NavSectionVertical
         data={navData}

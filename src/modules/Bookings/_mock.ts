@@ -1,19 +1,8 @@
+import { _tickets } from '@/modules/Tickets/_mock';
+
 import type { IBookingDiscountType, IBookingItem, IBookingTripStatus } from './types';
 
 // ----------------------------------------------------------------------
-
-const ROUTES = [
-  'Dhaka → Chattogram',
-  'Dhaka → Sylhet',
-  'Dhaka → Rajshahi',
-  "Chattogram → Cox's Bazar",
-  'Dhaka → Khulna',
-  'Sylhet → Dhaka',
-  'Rajshahi → Dhaka',
-  'Khulna → Dhaka',
-  "Dhaka → Cox's Bazar",
-  'Chattogram → Dhaka',
-];
 
 const STAFF = [
   { name: 'Jayvion Simon', role: 'Counter Agent' },
@@ -43,8 +32,6 @@ const PASSENGERS = [
 
 const STATUSES: IBookingTripStatus[] = ['taken', 'cancelled', 'returned', 'travelling'];
 
-const BUS_MODELS = ['9700', 'B11R', 'K250 UB', 'eCitaro', 'RN8 J', "Lion's Coach", 'ZK6122H9', 'Touring HD'];
-
 const avatar = (index: number) => `/assets/images/avatar/avatar_${(index % 12) + 1}.jpg`;
 
 export const _bookingList: IBookingItem[] = Array.from({ length: 24 }, (_, index) => {
@@ -52,6 +39,7 @@ export const _bookingList: IBookingItem[] = Array.from({ length: 24 }, (_, index
   const unitPrice = 650 + (index % 8) * 75;
   const subtotal = unitPrice * tickets;
   const staff = STAFF[index % STAFF.length];
+  const trip = _tickets[index % _tickets.length];
 
   let discountType: IBookingDiscountType = 'amount';
   let discount = 0;
@@ -69,9 +57,10 @@ export const _bookingList: IBookingItem[] = Array.from({ length: 24 }, (_, index
 
   return {
     id: `booking-${index + 1}`,
-    route: ROUTES[index % ROUTES.length],
-    busNumber: `DHK-${1000 + index * 37}`,
-    busModel: BUS_MODELS[index % BUS_MODELS.length],
+    tripId: trip.id,
+    route: trip.name,
+    busNumber: trip.busNumber,
+    busModel: trip.busModel,
     bookedBy: staff.name,
     bookedByRole: staff.role,
     bookedByAvatarUrl: avatar(index),

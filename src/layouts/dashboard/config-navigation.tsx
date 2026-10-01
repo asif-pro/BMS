@@ -22,6 +22,7 @@ const ICONS = {
   terminals: icon('ic_folder'),
   customers: icon('ic_user'),
   users: icon('ic_users'),
+  organizations: icon('ic_job'),
   settings: icon('ic_menu_item'),
   report: icon('ic_file'),
   help: icon('ic_chat'),
@@ -95,6 +96,11 @@ export function useNavData() {
               { title: t('NAV_ALL_STAFF'), path: paths.dashboard.user.list },
               { title: t('NAV_ADD_STAFF'), path: paths.dashboard.user.new },
             ],
+          },
+          {
+            title: t('NAV_ORGANIZATIONS'),
+            path: paths.dashboard.organizations,
+            icon: ICONS.organizations,
           },
           {
             title: t('NAV_SETTINGS'),

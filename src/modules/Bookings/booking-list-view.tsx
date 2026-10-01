@@ -29,7 +29,7 @@ import type { IBookingItem, IBookingTableFilters, IBookingTableFilterValue } fro
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-  { id: 'route', label: 'ROUTE' },
+  { id: 'route', label: 'TRIP' },
   { id: 'bookedBy', label: 'BOOKED_BY', width: 180 },
   { id: 'passengerName', label: 'PASSENGER', width: 180 },
   { id: 'tickets', label: 'TICKETS', width: 100 },
