@@ -220,6 +220,8 @@
   "VEHICLE_DETAILS_DESC_CREATE": "এই কোচের পরিচয়, বৈশিষ্ট্য, সংখ্যা এবং আসন বিন্যাস লিখুন।",
   "VEHICLE_NAME": "গাড়ির নাম",
   "PLATE_NUMBER": "প্লেট নম্বর",
+  "PLATE_NUMBER_INDEXED": "প্লেট নম্বর {{n}}",
+  "ENTER_VEHICLE_COUNT_FIRST": "আগে গাড়ির সংখ্যা দিন",
   "BRAND": "ব্র্যান্ড",
   "SELECT_BRAND": "ব্র্যান্ড নির্বাচন করুন",
   "MODEL": "মডেল",

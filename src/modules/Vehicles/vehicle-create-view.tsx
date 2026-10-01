@@ -76,16 +76,20 @@ export default function VehicleCreateView() {
   const readOnly = isView;
 
   const [name, setName] = useState('');
-  const [plateNumber, setPlateNumber] = useState('');
+  const [plateNumbers, setPlateNumbers] = useState<string[]>(['']);
   const [brand, setBrand] = useState<BrandOption | null>(null);
   const [model, setModel] = useState<string | null>(null);
   const [seats, setSeats] = useState<string>('');
-  const [quantity, setQuantity] = useState<string>('1');
+  const [quantity, setQuantity] = useState<string>('');
   const [engineType, setEngineType] = useState<VehicleEngineType | ''>('');
   const [busType, setBusType] = useState<VehicleBusType | ''>('');
   const [status, setStatus] = useState<VehicleStatus | ''>('active');
   const [layout, setLayout] = useState<LayoutConfig | null>(null);
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
+
+  const quantityEntered = quantity.trim() !== '' && Number(quantity) >= 1;
+  const vehicleCount = quantityEntered ? Math.max(1, Math.floor(Number(quantity))) : 1;
+  const platesDisabled = readOnly || !quantityEntered;
 
   useEffect(() => {
     if (!currentVehicle) {
@@ -96,9 +100,14 @@ export default function VehicleCreateView() {
       VEHICLE_BRANDS.find((item) => item.name === currentVehicle.brand) ?? null;
     const layoutOption =
       SEAT_LAYOUTS.find((item) => item.id === currentVehicle.layoutId) ?? null;
+    const count = Math.max(1, currentVehicle.quantity || 1);
 
     setName(currentVehicle.name);
-    setPlateNumber(currentVehicle.plateNumber);
+    setPlateNumbers(
+      Array.from({ length: count }, (_, index) =>
+        index === 0 ? currentVehicle.plateNumber : ''
+      )
+    );
     setBrand(brandOption);
     setModel(currentVehicle.model);
     setSeats(String(currentVehicle.seats));
@@ -109,6 +118,20 @@ export default function VehicleCreateView() {
     setLayout(layoutOption);
     setCoverUrl(currentVehicle.coverUrl);
   }, [currentVehicle]);
+
+  useEffect(() => {
+    setPlateNumbers((prev) => {
+      if (prev.length === vehicleCount) {
+        return prev;
+      }
+
+      if (prev.length < vehicleCount) {
+        return [...prev, ...Array.from({ length: vehicleCount - prev.length }, () => '')];
+      }
+
+      return prev.slice(0, vehicleCount);
+    });
+  }, [vehicleCount]);
 
   const layoutHint = useMemo(() => {
     if (!layout) {
@@ -198,32 +221,127 @@ export default function VehicleCreateView() {
             )}
 
             <Stack spacing={3} sx={{ p: 3 }}>
-              <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-                <Field label={t('VEHICLE_NAME')}>
-                  <TextField
-                    fullWidth
-                    value={name}
-                    placeholder={t('VEHICLE_NAME_PLACEHOLDER')}
-                    disabled={readOnly}
-                    onChange={(event) => setName(event.target.value)}
-                    InputProps={{
-                      startAdornment: <FieldIcon icon="solar:bus-bold" />,
-                    }}
-                  />
-                </Field>
+              <Field label={t('VEHICLE_NAME')}>
+                <TextField
+                  fullWidth
+                  value={name}
+                  placeholder={t('VEHICLE_NAME_PLACEHOLDER')}
+                  disabled={readOnly}
+                  onChange={(event) => setName(event.target.value)}
+                  InputProps={{
+                    startAdornment: <FieldIcon icon="solar:bus-bold" />,
+                  }}
+                />
+              </Field>
 
-                <Field label={t('PLATE_NUMBER')}>
-                  <TextField
-                    fullWidth
-                    value={plateNumber}
-                    placeholder={t('PLATE_NUMBER_PLACEHOLDER')}
-                    disabled={readOnly}
-                    onChange={(event) => setPlateNumber(event.target.value)}
-                    InputProps={{
-                      startAdornment: <FieldIcon icon="solar:card-bold" />,
+              <Stack spacing={2}>
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gap: 2,
+                    gridTemplateColumns: {
+                      xs: '1fr',
+                      md: 'minmax(0, 1fr) minmax(0, 1fr)',
+                    },
+                  }}
+                >
+                  <Field label={t('NUMBER_OF_VEHICLES')}>
+                    <TextField
+                      fullWidth
+                      type="number"
+                      value={quantity}
+                      placeholder={t('QUANTITY_PLACEHOLDER')}
+                      disabled={readOnly}
+                      onChange={(event) => setQuantity(event.target.value)}
+                      inputProps={{ min: 1 }}
+                      InputProps={{
+                        startAdornment: <FieldIcon icon="mdi:bus-multiple" />,
+                      }}
+                      helperText={readOnly ? ' ' : t('UNITS_TO_ADD_HELPER')}
+                    />
+                  </Field>
+
+                  {quantityEntered ? (
+                    <Field
+                      label={
+                        vehicleCount > 1
+                          ? t('PLATE_NUMBER_INDEXED', { n: 1 })
+                          : t('PLATE_NUMBER')
+                      }
+                    >
+                      <TextField
+                        fullWidth
+                        value={plateNumbers[0] ?? ''}
+                        placeholder={t('PLATE_NUMBER_PLACEHOLDER')}
+                        disabled={platesDisabled}
+                        onChange={(event) => {
+                          const value = event.target.value;
+                          setPlateNumbers((prev) =>
+                            prev.map((item, itemIndex) => (itemIndex === 0 ? value : item))
+                          );
+                        }}
+                        InputProps={{
+                          startAdornment: <FieldIcon icon="solar:card-bold" />,
+                        }}
+                      />
+                    </Field>
+                  ) : (
+                    <Field label={t('PLATE_NUMBER')}>
+                      <TextField
+                        fullWidth
+                        value=""
+                        placeholder={t('PLATE_NUMBER_PLACEHOLDER')}
+                        disabled
+                        InputProps={{
+                          startAdornment: <FieldIcon icon="solar:card-bold" />,
+                        }}
+                        helperText={t('ENTER_VEHICLE_COUNT_FIRST')}
+                      />
+                    </Field>
+                  )}
+                </Box>
+
+                {quantityEntered && vehicleCount > 1 && (
+                  <Box
+                    sx={{
+                      display: 'grid',
+                      gap: 2,
+                      gridTemplateColumns: {
+                        xs: '1fr',
+                        md: 'repeat(2, minmax(0, 1fr))',
+                      },
                     }}
-                  />
-                </Field>
+                  >
+                    {plateNumbers.slice(1).map((plateNumber, index) => {
+                      const plateIndex = index + 1;
+
+                      return (
+                        <Field
+                          key={`plate-${plateIndex}`}
+                          label={t('PLATE_NUMBER_INDEXED', { n: plateIndex + 1 })}
+                        >
+                          <TextField
+                            fullWidth
+                            value={plateNumber}
+                            placeholder={t('PLATE_NUMBER_PLACEHOLDER')}
+                            disabled={platesDisabled}
+                            onChange={(event) => {
+                              const value = event.target.value;
+                              setPlateNumbers((prev) =>
+                                prev.map((item, itemIndex) =>
+                                  itemIndex === plateIndex ? value : item
+                                )
+                              );
+                            }}
+                            InputProps={{
+                              startAdornment: <FieldIcon icon="solar:card-bold" />,
+                            }}
+                          />
+                        </Field>
+                      );
+                    })}
+                  </Box>
+                )}
               </Stack>
 
               <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
@@ -360,22 +478,6 @@ export default function VehicleCreateView() {
                       startAdornment: <FieldIcon icon="mdi:seat-passenger" />,
                     }}
                     helperText={layout && !readOnly ? t('FILLED_FROM_LAYOUT') : ' '}
-                  />
-                </Field>
-
-                <Field label={t('NUMBER_OF_VEHICLES')}>
-                  <TextField
-                    fullWidth
-                    type="number"
-                    value={quantity}
-                    placeholder={t('QUANTITY_PLACEHOLDER')}
-                    disabled={readOnly}
-                    onChange={(event) => setQuantity(event.target.value)}
-                    inputProps={{ min: 1 }}
-                    InputProps={{
-                      startAdornment: <FieldIcon icon="mdi:bus-multiple" />,
-                    }}
-                    helperText={readOnly ? ' ' : t('UNITS_TO_ADD_HELPER')}
                   />
                 </Field>
 

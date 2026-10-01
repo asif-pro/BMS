@@ -220,6 +220,8 @@
   "VEHICLE_DETAILS_DESC_CREATE": "Enter fleet identity, specs, quantity, and seating layout for this coach.",
   "VEHICLE_NAME": "Vehicle name",
   "PLATE_NUMBER": "Plate number",
+  "PLATE_NUMBER_INDEXED": "Plate number {{n}}",
+  "ENTER_VEHICLE_COUNT_FIRST": "Enter number of vehicles first",
   "BRAND": "Brand",
   "SELECT_BRAND": "Select brand",
   "MODEL": "Model",
