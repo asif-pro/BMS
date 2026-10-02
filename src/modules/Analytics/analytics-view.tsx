@@ -8,24 +8,8 @@ import { useTranslation } from 'react-i18next';
 
 import { useSettingsContext } from '@/components/settings';
 
-import {
-  _sparklines,
-  _fleetHealth,
-  _topDrivers,
-  _topStaff,
-  _fleetByBrand,
-  _salaryByRole,
-  _payrollTrend,
-  _ridershipChart,
-  _revenueByRoute,
-  _routePerformance,
-  _brandPerformance,
-  _payrollTotal,
-  _totalExpenseAmount,
-  _salaryExpenseAmount,
-  _salaryExpensePercent,
-  _salaryExpenseByRole,
-} from './_mock';
+import { useGetAnalytics } from '@/hooks/useGetAnalytics.hook';
+
 import AnalyticsRidership from './analytics-website-visits';
 import AnalyticsTopStaff from './analytics-top-staff';
 import AnalyticsTopDrivers from './analytics-top-drivers';
@@ -44,6 +28,28 @@ export default function AnalyticsView() {
   const { t } = useTranslation('index');
 
   const settings = useSettingsContext();
+  const { data } = useGetAnalytics();
+
+  const sparklines = data?.sparklines;
+  const fleetHealth = data?.fleetHealth;
+  const topDrivers = data?.topDrivers ?? [];
+  const topStaff = data?.topStaff ?? [];
+  const fleetByBrand = data?.fleetByBrand ?? [];
+  const salaryByRole = data?.salaryByRole ?? [];
+  const payrollTrend = data?.payrollTrend;
+  const ridershipChart = data?.ridershipChart;
+  const revenueByRoute = data?.revenueByRoute ?? [];
+  const routePerformance = data?.routePerformance ?? [];
+  const brandPerformance = data?.brandPerformance ?? [];
+  const payrollTotal = data?.payrollTotal ?? 0;
+  const totalExpenseAmount = data?.totalExpenseAmount ?? 0;
+  const salaryExpenseAmount = data?.salaryExpenseAmount ?? 0;
+  const salaryExpensePercent = data?.salaryExpensePercent ?? 0;
+  const salaryExpenseByRole = data?.salaryExpenseByRole ?? [];
+
+  if (!data || !sparklines || !fleetHealth || !payrollTrend || !ridershipChart) {
+    return null;
+  }
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'xl'} disableGutters>
@@ -57,7 +63,7 @@ export default function AnalyticsView() {
             title={t('TOTAL_PASSENGERS')}
             percent={2.6}
             total={48230}
-            chart={{ series: _sparklines.passengers }}
+            chart={{ series: sparklines.passengers }}
           />
         </Grid>
 
@@ -69,7 +75,7 @@ export default function AnalyticsView() {
             formatTotal={(value) => `৳${(value / 1000000).toFixed(2)}M`}
             chart={{
               colors: [theme.palette.info.light, theme.palette.info.main],
-              series: _sparklines.revenue,
+              series: sparklines.revenue,
             }}
           />
         </Grid>
@@ -82,7 +88,7 @@ export default function AnalyticsView() {
             formatTotal={(value) => fPercent(value)}
             chart={{
               colors: [theme.palette.warning.light, theme.palette.warning.main],
-              series: _sparklines.utilization,
+              series: sparklines.utilization,
             }}
           />
         </Grid>
@@ -95,7 +101,7 @@ export default function AnalyticsView() {
             formatTotal={(value) => fPercent(value)}
             chart={{
               colors: [theme.palette.error.light, theme.palette.error.main],
-              series: _sparklines.onTime,
+              series: sparklines.onTime,
             }}
           />
         </Grid>
@@ -105,8 +111,8 @@ export default function AnalyticsView() {
             title={t('RIDERSHIP_BOOKINGS')}
             subheader={t('PASSENGERS_THAN_LAST_YEAR')}
             chart={{
-              labels: _ridershipChart.labels,
-              series: _ridershipChart.series,
+              labels: ridershipChart.labels,
+              series: ridershipChart.series,
             }}
           />
         </Grid>
@@ -116,7 +122,7 @@ export default function AnalyticsView() {
             title={t('REVENUE_BY_ROUTE')}
             subheader={t('REVENUE_BY_ROUTE_SUBHEADER')}
             chart={{
-              series: _revenueByRoute,
+              series: revenueByRoute,
             }}
           />
         </Grid>
@@ -126,7 +132,7 @@ export default function AnalyticsView() {
             title={t('ROUTE_PERFORMANCE')}
             subheader={t('ROUTE_PERFORMANCE_SUBHEADER')}
             chart={{
-              series: _routePerformance,
+              series: routePerformance,
             }}
           />
         </Grid>
@@ -135,8 +141,8 @@ export default function AnalyticsView() {
           <AnalyticsCurrentSubject
             title={t('FLEET_HEALTH')}
             chart={{
-              categories: _fleetHealth.categories,
-              series: _fleetHealth.series,
+              categories: fleetHealth.categories,
+              series: fleetHealth.series,
             }}
           />
         </Grid>
@@ -146,7 +152,7 @@ export default function AnalyticsView() {
             title={t('FLEET_BY_BRAND')}
             subheader={t('FLEET_BY_BRAND_DISTRIBUTION')}
             chart={{
-              series: _fleetByBrand,
+              series: fleetByBrand,
             }}
           />
         </Grid>
@@ -156,7 +162,7 @@ export default function AnalyticsView() {
             title={t('BRAND_UTILIZATION')}
             subheader={t('BRAND_UTILIZATION_SUBHEADER')}
             chart={{
-              series: _brandPerformance,
+              series: brandPerformance,
               options: {
                 tooltip: {
                   y: {
@@ -175,7 +181,7 @@ export default function AnalyticsView() {
           <AnalyticsTopDrivers
             title={t('TOP_DRIVERS')}
             subheader={t('BEST_PERFORMING_DRIVERS')}
-            tableData={_topDrivers}
+            tableData={topDrivers}
             tableLabels={[
               { id: 'name', label: t('DRIVER') },
               { id: 'route', label: t('MAIN_ROUTE') },
@@ -191,7 +197,7 @@ export default function AnalyticsView() {
           <AnalyticsTopStaff
             title={t('TOP_STAFF')}
             subheader={t('NON_DRIVER_LEADERS')}
-            list={_topStaff}
+            list={topStaff}
           />
         </Grid>
 
@@ -200,19 +206,19 @@ export default function AnalyticsView() {
             title={t('PAYROLL_TREND')}
             subheader={t('PAYROLL_TREND_SUBHEADER')}
             chart={{
-              categories: _payrollTrend.categories,
+              categories: payrollTrend.categories,
               series: [
                 {
                   name: t('PAYROLL'),
                   type: 'column',
                   fill: 'solid',
-                  data: _payrollTrend.series[0].data,
+                  data: payrollTrend.series[0].data,
                 },
                 {
                   name: t('OVERTIME'),
                   type: 'line',
                   fill: 'solid',
-                  data: _payrollTrend.series[1].data,
+                  data: payrollTrend.series[1].data,
                 },
               ],
             }}
@@ -222,9 +228,9 @@ export default function AnalyticsView() {
         <Grid xs={12} md={6} lg={4}>
           <AnalyticsConversionRates
             title={t('SALARY_BY_ROLE')}
-            subheader={t('TOTAL_PAYROLL', { amount: `৳${(_payrollTotal / 1000).toFixed(0)}k` })}
+            subheader={t('TOTAL_PAYROLL', { amount: `৳${(payrollTotal / 1000).toFixed(0)}k` })}
             chart={{
-              series: _salaryByRole.map((item) => ({
+              series: salaryByRole.map((item) => ({
                 label: item.label,
                 value: Math.round(item.value / 1000),
               })),
@@ -246,10 +252,10 @@ export default function AnalyticsView() {
           <AnalyticsSalaryExpenseShare
             title={t('SALARY_VS_TOTAL_EXPENSE')}
             subheader={t('SALARY_EXPENSE_SUBHEADER')}
-            totalExpense={_totalExpenseAmount}
-            salaryExpense={_salaryExpenseAmount}
-            salaryPercent={_salaryExpensePercent}
-            byRole={_salaryExpenseByRole}
+            totalExpense={totalExpenseAmount}
+            salaryExpense={salaryExpenseAmount}
+            salaryPercent={salaryExpensePercent}
+            byRole={salaryExpenseByRole}
           />
         </Grid>
       </Grid>

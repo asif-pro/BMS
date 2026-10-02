@@ -24,9 +24,9 @@ import CustomBreadcrumbs from '@/components/custom-breadcrumbs';
 
 import StaffAvatarUpload from '@/modules/Users/staff-avatar-upload';
 
-import { _customerList, getCustomerTripHistory } from './_mock';
+import { useGetCustomerById, useGetCustomerTripHistory } from '@/hooks/useGetCustomers.hook';
 import CustomerTripHistory from './customer-trip-history';
-import type { ICustomerItem } from './types';
+import type { ICustomerItem } from '@/interfaces/customer.interface';
 
 // ----------------------------------------------------------------------
 
@@ -74,8 +74,8 @@ export default function CustomerDetailsView() {
   const { id = '' } = useParams();
   const { enqueueSnackbar } = useSnackbar();
 
-  const customer = useMemo(() => _customerList.find((item) => item.id === id), [id]);
-  const trips = useMemo(() => getCustomerTripHistory(id), [id]);
+  const { data: customer } = useGetCustomerById(id);
+  const { data: trips = [] } = useGetCustomerTripHistory(id);
 
   const TABS = useMemo(
     () => [

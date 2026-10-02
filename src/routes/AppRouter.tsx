@@ -21,6 +21,8 @@ import AnalyticsView from '@/modules/Analytics/analytics-view';
 import AccountsView from '@/modules/Accounts/accounts-view';
 import MaintenanceListView from '@/modules/Maintenance/maintenance-list-view';
 import OrganizationListView from '@/modules/Organizations/organization-list-view';
+import OrganizationCreateView from '@/modules/Organizations/organization-create-view';
+import OrganizationDetailsView from '@/modules/Organizations/organization-details-view';
 import { paths } from './paths';
 
 const AppRouter = () => {
@@ -95,7 +97,15 @@ const AppRouter = () => {
             { path: 'staff', element: <Navigate to={paths.dashboard.user.list} replace /> },
           ],
         },
-        { path: 'organizations', element: <OrganizationListView /> },
+        {
+          path: 'organizations',
+          element: <Outlet />,
+          children: [
+            { index: true, element: <OrganizationListView /> },
+            { path: 'new', element: <OrganizationCreateView /> },
+            { path: ':id', element: <OrganizationDetailsView /> },
+          ],
+        },
         { path: 'settings', element: <Settings /> },
         { path: 'report', element: <PageHeading title="REPORT" /> },
         { path: 'help', element: <PageHeading title="HELP_AND_SUPPORT" /> },

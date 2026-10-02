@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Box from '@mui/material/Box';
@@ -11,14 +11,21 @@ import { RouterLink } from '@/routes/components';
 import Iconify from '@/components/iconify';
 import CustomBreadcrumbs from '@/components/custom-breadcrumbs';
 
-import { _vehicles } from './_mock';
+import { useGetVehicles } from '@/hooks/useGetVehicles.hook';
+import type { VehicleItem } from '@/interfaces/vehicle.interface';
+
 import VehicleCard from './vehicle-card';
 
 // ----------------------------------------------------------------------
 
 export default function VehicleListView() {
   const { t } = useTranslation();
-  const [vehicles, setVehicles] = useState(_vehicles);
+  const { data: vehiclesData = [] } = useGetVehicles();
+  const [vehicles, setVehicles] = useState<VehicleItem[]>([]);
+
+  useEffect(() => {
+    setVehicles(vehiclesData);
+  }, [vehiclesData]);
 
   const handleDelete = useCallback((id: string) => {
     setVehicles((current) => current.filter((vehicle) => vehicle.id !== id));

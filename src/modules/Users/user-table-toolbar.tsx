@@ -15,7 +15,7 @@ import Select, { SelectChangeEvent } from '@mui/material/Select';
 import Iconify from '@/components/iconify';
 import CustomPopover, { usePopover } from '@/components/custom-popover';
 
-import type { IUserTableFilters, IUserTableFilterValue } from './types';
+import type { IUserTableFilters, IUserTableFilterValue } from '@/interfaces/user.interface';
 
 // ----------------------------------------------------------------------
 

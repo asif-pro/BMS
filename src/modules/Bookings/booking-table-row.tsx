@@ -16,19 +16,10 @@ import { fDate, fTime } from '@/utils/format-time';
 
 import Label from '@/components/label';
 
-import type { IBookingItem, IBookingTripStatus } from './types';
+import { BOOKING_STATUS_COLOR } from '@/constants/booking.constant';
+import type { IBookingItem, IBookingTripStatus } from '@/interfaces/booking.interface';
 
 // ----------------------------------------------------------------------
-
-const STATUS_COLOR: Record<
-  IBookingTripStatus,
-  'info' | 'success' | 'warning' | 'error' | 'default'
-> = {
-  taken: 'success',
-  travelling: 'info',
-  returned: 'warning',
-  cancelled: 'error',
-};
 
 type Props = {
   row: IBookingItem;
@@ -203,7 +194,7 @@ export default function BookingTableRow({ row }: Props) {
       </TableCell>
 
       <TableCell>
-        <Label variant="soft" color={STATUS_COLOR[tripStatus]}>
+        <Label variant="soft" color={BOOKING_STATUS_COLOR[tripStatus]}>
           {statusLabel[tripStatus]}
         </Label>
       </TableCell>

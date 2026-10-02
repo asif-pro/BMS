@@ -23,7 +23,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Iconify from '@/components/iconify';
 import Scrollbar from '@/components/scrollbar';
 
-import type { TicketFilterValue, TicketFilters, TicketOperator } from './types';
+import type { TicketFilterValue, TicketFilters, TicketOperator } from '@/interfaces/ticket.interface';
 
 // ----------------------------------------------------------------------
 

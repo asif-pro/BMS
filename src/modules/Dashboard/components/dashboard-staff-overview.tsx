@@ -1,3 +1,4 @@
+import { ROLE_ICONS } from '@/constants/staff.constant';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import { alpha, useTheme } from '@mui/material/styles';
@@ -24,17 +25,6 @@ interface Props extends CardProps {
   list: StaffRoleItem[];
   compact?: boolean;
 }
-
-const ROLE_ICONS: Record<string, string> = {
-  Admin: 'solar:shield-user-bold-duotone',
-  Driver: 'solar:bus-bold-duotone',
-  Manager: 'solar:case-round-bold-duotone',
-  Helper: 'solar:users-group-rounded-bold-duotone',
-  Mechanic: 'solar:wrench-bold-duotone',
-  Supervisor: 'solar:clipboard-check-bold-duotone',
-  Conductor: 'solar:ticket-bold-duotone',
-  Other: 'solar:user-bold-duotone',
-};
 
 export default function DashboardStaffOverview({
   title,

@@ -25,21 +25,14 @@ import CustomBreadcrumbs from '@/components/custom-breadcrumbs';
 import { RouterLink } from '@/routes/components';
 
 import { ticketPaths } from './paths';
-import { _tickets } from './_mock';
+import { TICKET_AMENITIES, TICKET_STATUS_COLOR } from '@/constants/ticket.constant';
+import { useGetTicketById } from '@/hooks/useGetTickets.hook';
 import TicketSeatMap from './ticket-seat-map';
 import TripTraceMap, { TripTraceFullscreen } from './trip-trace-map';
-import type { TicketItem, TicketStatus } from './types';
-import { getVehicleById } from '@/modules/Vehicles/_mock';
+import type { TicketItem, TicketStatus } from '@/interfaces/ticket.interface';
+import { useGetVehicleById } from '@/hooks/useGetVehicles.hook';
 
 // ----------------------------------------------------------------------
-
-const STATUS_COLOR: Record<TicketStatus, 'info' | 'success' | 'warning' | 'error' | 'default'> = {
-  upcoming: 'info',
-  active: 'success',
-  routing: 'warning',
-  canceled: 'error',
-  completed: 'default',
-};
 
 const STOPPAGES_MAX_HEIGHT = 520;
 
@@ -54,20 +47,12 @@ function formatKilometers(value: number) {
   return `${(Math.round(value * 10) / 10).toFixed(1)} KM`;
 }
 
-const AMENITIES: { key: string; service: string; icon: string }[] = [
-  { key: 'AMENITY_WIFI', service: 'Wi-Fi', icon: 'solar:wi-fi-bold' },
-  { key: 'AMENITY_AC', service: 'Air conditioned', icon: 'solar:snowflake-bold' },
-  { key: 'AMENITY_FOOD', service: 'Snacks', icon: 'solar:chef-hat-bold' },
-  { key: 'AMENITY_TOILET', service: 'Onboard toilet', icon: 'ph:toilet-bold' },
-  { key: 'AMENITY_EXTRA_LUGGAGE', service: 'Extra luggage', icon: 'solar:suitcase-bold' },
-];
-
 // ----------------------------------------------------------------------
 
 export default function TicketDetails() {
   const { t } = useTranslation('index');
   const { id } = useParams();
-  const ticket = _tickets.find((item) => item.id === id);
+  const { data: ticket } = useGetTicketById(id);
   const { ref, height } = useElementHeight<HTMLDivElement>();
 
   return (
@@ -105,6 +90,7 @@ export default function TicketDetails() {
 
 const DetailsCard = forwardRef<HTMLDivElement, { ticket: TicketItem }>(function DetailsCard({ ticket }, ref) {
   const { t } = useTranslation('index');
+  const { data: vehicle } = useGetVehicleById(ticket.vehicleId);
   const ticketsBooked = ticket.bookers.length;
   const ticketsRemaining = Math.max(ticket.seatCapacity - ticketsBooked, 0);
   const totalEarnings = ticket.seats
@@ -146,7 +132,7 @@ const DetailsCard = forwardRef<HTMLDivElement, { ticket: TicketItem }>(function 
 
         <Label
           variant="soft"
-          color={STATUS_COLOR[ticket.status]}
+          color={TICKET_STATUS_COLOR[ticket.status]}
           startIcon={<Iconify icon="solar:flag-bold" />}
         >
           {statusLabel[ticket.status]}
@@ -188,7 +174,7 @@ const DetailsCard = forwardRef<HTMLDivElement, { ticket: TicketItem }>(function 
               <Box sx={{ p: 0.5, width: 220 }}>
                 <Image
                   alt={ticket.busModel}
-                  src={getVehicleById(ticket.vehicleId)?.coverUrl || ticket.images[0]}
+                  src={vehicle?.coverUrl || ticket.images[0]}
                   ratio="16/10"
                   sx={{ borderRadius: 1 }}
                 />
@@ -300,7 +286,7 @@ function TripAmenities({ services }: { services: string[] }) {
         borderTop: (theme) => `solid 1px ${theme.palette.divider}`,
       }}
     >
-      {AMENITIES.map((amenity) => {
+      {TICKET_AMENITIES.map((amenity) => {
         const available = services.includes(amenity.service);
         const label = t(amenity.key);
         const title = available ? label : `${label} ${t('UNAVAILABLE')}`;

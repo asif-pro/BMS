@@ -1,5 +1,5 @@
 import isEqual from 'lodash/isEqual';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Card from '@mui/material/Card';
@@ -28,12 +28,13 @@ import {
   TablePaginationCustom,
 } from '@/components/table';
 
-import { _customerList } from './_mock';
+import { useGetCustomers } from '@/hooks/useGetCustomers.hook';
+
 import CustomerTableRow from './customer-table-row';
 import { CustomerCardList } from './customer-card';
 import CustomerTableToolbar from './customer-table-toolbar';
 import CustomerTableFiltersResult from './customer-table-filters-result';
-import type { ICustomerItem, ICustomerTableFilters, ICustomerTableFilterValue } from './types';
+import type { ICustomerItem, ICustomerTableFilters, ICustomerTableFilterValue } from '@/interfaces/customer.interface';
 
 // ----------------------------------------------------------------------
 
@@ -61,7 +62,12 @@ export default function CustomerListView() {
   const router = useRouter();
 
   const [view, setView] = useState<ViewMode>('list');
-  const [tableData, setTableData] = useState<ICustomerItem[]>(_customerList);
+  const { data: customersData = [] } = useGetCustomers();
+  const [tableData, setTableData] = useState<ICustomerItem[]>([]);
+
+  useEffect(() => {
+    setTableData(customersData);
+  }, [customersData]);
   const [filters, setFilters] = useState(defaultFilters);
 
   const dataFiltered = applyFilter({

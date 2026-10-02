@@ -13,7 +13,7 @@ import Image from '@/components/image';
 import Iconify from '@/components/iconify';
 
 import { ticketPaths } from './paths';
-import type { TicketItem } from './types';
+import type { TicketItem } from '@/interfaces/ticket.interface';
 
 // ----------------------------------------------------------------------
 

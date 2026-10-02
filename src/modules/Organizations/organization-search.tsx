@@ -9,7 +9,7 @@ import Iconify from '@/components/iconify';
 import SearchNotFound from '@/components/search-not-found';
 import { match, parse } from '@/utils/highlight-match';
 
-import type { IOrganizationItem } from './types';
+import type { IOrganizationItem } from '@/interfaces/organization.interface';
 
 // ----------------------------------------------------------------------
 
@@ -34,7 +34,7 @@ export default function OrganizationSearch({ query, results, onSearch, onSelect 
 
   return (
     <Autocomplete
-      sx={{ width: { xs: 1, sm: 260 } }}
+      sx={{ width: { xs: 1, sm: 420, md: 520 } }}
       autoHighlight
       popupIcon={null}
       options={results}

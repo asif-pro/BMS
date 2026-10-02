@@ -1,6 +1,6 @@
 import Box from '@mui/material/Box';
 
-import type { TicketVehicleOption } from './_mock';
+import type { TicketVehicleOption } from '@/interfaces/ticket.interface';
 
 // ----------------------------------------------------------------------
 

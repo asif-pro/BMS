@@ -31,7 +31,7 @@ import {
   TablePaginationCustom,
 } from '@/components/table';
 
-import type { IStaffSalaryItem } from './types';
+import type { IStaffSalaryItem } from '@/interfaces/account.interface';
 
 // ----------------------------------------------------------------------
 

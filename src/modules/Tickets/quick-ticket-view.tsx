@@ -37,32 +37,33 @@ import { useMockedUser } from '@/hooks/use-mocked-user';
 import Iconify from '@/components/iconify';
 import CustomBreadcrumbs from '@/components/custom-breadcrumbs';
 
+import { DESTINATIONS } from '@/constants/ticket.constant';
 import {
-  DESTINATIONS,
-  _tickets,
-  _ticketVehicles,
-  formatTicketVehicleOption,
-  type TicketVehicleOption,
-} from './_mock';
-import VehicleOptionLabel from './vehicle-option-label';
-import {
-  aisleLabelForRow,
-  buildLayoutSeats,
   DOOR_ICON,
   DRIVER_ICON,
   ENGINE_ICON,
+  SEAT_LAYOUTS,
+} from '@/constants/seat-layout.constant';
+import type {
+  DeckConfig,
+  LayoutConfig,
+  LayoutId,
+  SideBlockKind,
+} from '@/interfaces/seat-layout.interface';
+import type { TicketSeat, TicketVehicleOption } from '@/interfaces/ticket.interface';
+import { _tickets, _ticketVehicles } from '@/mock_data/tickets.mock';
+import { formatTicketVehicleOption } from '@/utils/ticket';
+import {
+  aisleLabelForRow,
+  buildLayoutSeats,
   getLayoutDecks,
   getSeatIdFormat,
   getSideBlockAtRow,
   isSeatBlockedBySideBlock,
   seatIdForDeck,
-  type SideBlockKind,
-  SEAT_LAYOUTS,
-  type DeckConfig,
-  type LayoutConfig,
-  type LayoutId,
-} from './seat-layouts';
-import type { TicketSeat } from './types';
+} from '@/utils/seat-layouts';
+
+import VehicleOptionLabel from './vehicle-option-label';
 
 // ----------------------------------------------------------------------
 

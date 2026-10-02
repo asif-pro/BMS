@@ -25,7 +25,7 @@ import CustomPopover, { usePopover } from '@/components/custom-popover';
 
 import { SEAT_LAYOUTS } from '@/modules/Tickets/seat-layouts';
 
-import type { VehicleItem, VehicleStatus } from './types';
+import type { VehicleItem, VehicleStatus } from '@/interfaces/vehicle.interface';
 
 // ----------------------------------------------------------------------
 

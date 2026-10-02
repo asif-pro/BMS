@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
@@ -11,7 +11,7 @@ import Iconify from '@/components/iconify';
 import EmptyContent from '@/components/empty-content';
 import CustomBreadcrumbs from '@/components/custom-breadcrumbs';
 
-import { _userList } from './_mock';
+import { useGetUserById } from '@/hooks/useGetUsers.hook';
 import UserNewEditForm from './user-new-edit-form';
 
 // ----------------------------------------------------------------------
@@ -20,7 +20,7 @@ export default function UserDetailsView() {
   const { t } = useTranslation('index');
   const { id = '' } = useParams();
 
-  const currentUser = useMemo(() => _userList.find((user) => user.id === id), [id]);
+  const { data: currentUser } = useGetUserById(id);
 
   const [editing, setEditing] = useState(false);
 

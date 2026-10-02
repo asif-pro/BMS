@@ -19,8 +19,8 @@ import Iconify from '@/components/iconify';
 import Scrollbar from '@/components/scrollbar';
 import { TableHeadCustom } from '@/components/table';
 
-import { CATEGORY_ICONS } from './_mock';
-import type { ITransactionItem } from './types';
+import { CATEGORY_ICONS } from '@/constants/account.constant';
+import type { ITransactionItem } from '@/interfaces/account.interface';
 
 // ----------------------------------------------------------------------
 

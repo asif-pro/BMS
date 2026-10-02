@@ -16,7 +16,8 @@ import Iconify from '@/components/iconify';
 import { ConfirmDialog } from '@/components/custom-dialog';
 import CustomPopover, { usePopover } from '@/components/custom-popover';
 
-import type { IMaintenanceItem, IMaintenanceStatus } from './types';
+import { MAINTENANCE_STATUS_COLORS } from '@/constants/maintenance.constant';
+import type { IMaintenanceItem } from '@/interfaces/maintenance.interface';
 
 // ----------------------------------------------------------------------
 
@@ -24,13 +25,6 @@ type Props = {
   row: IMaintenanceItem;
   onDeleteRow: VoidFunction;
   onCompleteRow: VoidFunction;
-};
-
-const STATUS_COLORS: Record<IMaintenanceStatus, 'info' | 'warning' | 'success' | 'error'> = {
-  scheduled: 'info',
-  in_progress: 'warning',
-  completed: 'success',
-  overdue: 'error',
 };
 
 export default function MaintenanceTableRow({ row, onDeleteRow, onCompleteRow }: Props) {
@@ -98,7 +92,7 @@ export default function MaintenanceTableRow({ row, onDeleteRow, onCompleteRow }:
         <TableCell sx={{ whiteSpace: 'nowrap' }}>{fTaka(cost)}</TableCell>
 
         <TableCell>
-          <Label variant="soft" color={STATUS_COLORS[status]}>
+          <Label variant="soft" color={MAINTENANCE_STATUS_COLORS[status]}>
             {t(status.toUpperCase())}
           </Label>
         </TableCell>

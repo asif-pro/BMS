@@ -9,7 +9,7 @@ import Stack, { StackProps } from '@mui/material/Stack';
 
 import Iconify from '@/components/iconify';
 
-import type { IUserTableFilters, IUserTableFilterValue } from './types';
+import type { IUserTableFilters, IUserTableFilterValue } from '@/interfaces/user.interface';
 
 // ----------------------------------------------------------------------
 

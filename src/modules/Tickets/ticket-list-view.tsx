@@ -43,8 +43,9 @@ import TicketSearch from './ticket-search';
 import TicketFilters from './ticket-filters';
 import TicketTableRow from './ticket-table-row';
 import TicketFiltersResult from './ticket-filters-result';
-import { _operators, _tickets, DESTINATIONS, TICKET_SERVICE_OPTIONS } from './_mock';
-import type { TicketFilterValue, TicketFilters as TicketFiltersType, TicketItem, TicketStatus } from './types';
+import { DESTINATIONS, TICKET_SERVICE_OPTIONS } from '@/constants/ticket.constant';
+import { useGetOperators, useGetTickets } from '@/hooks/useGetTickets.hook';
+import type { TicketFilterValue, TicketFilters as TicketFiltersType, TicketItem, TicketStatus } from '@/interfaces/ticket.interface';
 
 // ----------------------------------------------------------------------
 
@@ -74,6 +75,8 @@ export default function TicketListView() {
   const { t } = useTranslation('index');
   const router = useRouter();
   const table = useTable({ defaultRowsPerPage: 10, defaultOrderBy: 'name' });
+  const { data: tickets = [] } = useGetTickets();
+  const { data: operators = [] } = useGetOperators();
 
   const statusOptions: {
     value: 'all' | TicketStatus;
@@ -106,7 +109,7 @@ export default function TicketListView() {
   const dateError = isAfter(filters.startDate, filters.endDate);
 
   const dataFiltered = applyFilter({
-    inputData: _tickets,
+    inputData: tickets,
     filters,
     status,
     dateError,
@@ -175,7 +178,7 @@ export default function TicketListView() {
     }));
 
     if (inputValue) {
-      const results = _tickets.filter(
+      const results = tickets.filter(
         (ticket) => ticket.name.toLowerCase().indexOf(inputValue.toLowerCase()) !== -1
       );
 
@@ -210,7 +213,7 @@ export default function TicketListView() {
           canReset={canReset}
           onResetFilters={handleResetFilters}
           serviceOptions={TICKET_SERVICE_OPTIONS.map((option) => option.label)}
-          operatorOptions={_operators}
+          operatorOptions={operators}
           destinationOptions={DESTINATIONS}
           dateError={dateError}
         />
@@ -291,8 +294,8 @@ export default function TicketListView() {
                   color={tab.color}
                 >
                   {tab.value === 'all'
-                    ? _tickets.length
-                    : _tickets.filter((ticket) => ticket.status === tab.value).length}
+                    ? tickets.length
+                    : tickets.filter((ticket) => ticket.status === tab.value).length}
                 </Label>
               }
               sx={{ textTransform: 'capitalize' }}

@@ -1,5 +1,5 @@
 import { m } from 'framer-motion';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
@@ -15,6 +15,7 @@ import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 
 import { useBoolean } from '@/hooks/use-boolean';
+import { useGetNotifications } from '@/hooks/useGetNotifications.hook';
 import { useResponsive } from '@/hooks/use-responsive';
 
 import Iconify from '@/components/iconify';
@@ -22,38 +23,6 @@ import Scrollbar from '@/components/scrollbar';
 import { varHover } from '@/components/animate';
 
 import NotificationItem from './notification-item';
-
-// ----------------------------------------------------------------------
-
-const MOCK_NOTIFICATIONS = [
-  {
-    id: '1',
-    title: '<p><strong>Bus #102</strong> completed its morning route successfully.</p>',
-    category: 'Fleet Operations',
-    createdAt: new Date(Date.now() - 1000 * 60 * 15),
-    isUnRead: true,
-    type: 'delivery',
-    avatarUrl: null,
-  },
-  {
-    id: '2',
-    title: '<p><strong>Driver John Doe</strong> reported maintenance required for Bus #405.</p>',
-    category: 'Maintenance',
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2),
-    isUnRead: true,
-    type: 'mail',
-    avatarUrl: null,
-  },
-  {
-    id: '3',
-    title: '<p><strong>System Schedule</strong> updated for route Downtown - Airport line.</p>',
-    category: 'Schedules',
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 6),
-    isUnRead: false,
-    type: 'chat',
-    avatarUrl: null,
-  },
-];
 
 // ----------------------------------------------------------------------
 
@@ -81,7 +50,12 @@ export default function NotificationsPopover() {
     setCurrentTab(newValue);
   }, []);
 
-  const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
+  const { data: notificationsData = [] } = useGetNotifications();
+  const [notifications, setNotifications] = useState(notificationsData);
+
+  useEffect(() => {
+    setNotifications(notificationsData);
+  }, [notificationsData]);
 
   const totalUnRead = notifications.filter((item) => item.isUnRead === true).length;
 

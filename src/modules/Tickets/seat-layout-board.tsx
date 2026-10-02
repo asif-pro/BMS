@@ -20,7 +20,7 @@ import {
   type LayoutConfig,
   type SideBlockKind,
 } from './seat-layouts';
-import type { TicketSeatColumn } from './types';
+import type { TicketSeatColumn } from '@/interfaces/ticket.interface';
 
 // ----------------------------------------------------------------------
 

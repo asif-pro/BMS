@@ -32,34 +32,20 @@ import {
 } from '@/modules/Tickets/seat-layouts';
 
 import {
-  getVehicleById,
+  COVER_LABELS,
   VEHICLE_BRANDS,
   VEHICLE_BUS_TYPES,
   VEHICLE_COVERS,
   VEHICLE_ENGINE_TYPES,
   VEHICLE_MODELS,
   VEHICLE_STATUSES,
-} from './_mock';
-import type { VehicleBusType, VehicleEngineType, VehicleStatus } from './types';
+} from '@/constants/vehicle.constant';
+import { useGetVehicleById } from '@/hooks/useGetVehicles.hook';
+import type { VehicleBusType, VehicleEngineType, VehicleStatus } from '@/interfaces/vehicle.interface';
 
 // ----------------------------------------------------------------------
 
 type BrandOption = (typeof VEHICLE_BRANDS)[number];
-
-const COVER_LABELS: Record<string, string> = {
-  '/assets/images/buses/highway-coach.jpg': 'Highway coach',
-  '/assets/images/buses/ac-coach.jpg': 'AC coach',
-  '/assets/images/buses/sleeper.jpg': 'Sleeper',
-  '/assets/images/buses/double-decker.jpg': 'Double decker',
-  '/assets/images/buses/night-bus.jpg': 'Night bus',
-  '/assets/images/buses/blue-bus.jpg': 'Blue bus',
-  '/assets/images/buses/yellow-bus.jpg': 'Yellow bus',
-  '/assets/images/buses/orange-coach.jpg': 'Orange coach',
-  '/assets/images/buses/desert-coach.jpg': 'Desert coach',
-  '/assets/images/buses/minibus.jpg': 'Minibus',
-  '/assets/images/buses/double-decker-city.jpg': 'City double decker',
-  '/assets/images/buses/pink-coach.jpg': 'Pink coach',
-};
 
 // ----------------------------------------------------------------------
 
@@ -70,7 +56,7 @@ export default function VehicleCreateView() {
   const pathname = usePathname();
   const mdUp = useMediaQuery((theme: Theme) => theme.breakpoints.up('md'));
 
-  const currentVehicle = useMemo(() => getVehicleById(id), [id]);
+  const { data: currentVehicle } = useGetVehicleById(id);
   const isEdit = Boolean(currentVehicle) && pathname.endsWith('/edit');
   const isView = Boolean(currentVehicle) && !isEdit;
   const readOnly = isView;

@@ -1,5 +1,5 @@
 import isEqual from 'lodash/isEqual';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
@@ -21,10 +21,11 @@ import {
   TablePaginationCustom,
 } from '@/components/table';
 
-import { _bookingList } from './_mock';
+import { useGetBookings } from '@/hooks/useGetBookings.hook';
+
 import BookingTableRow from './booking-table-row';
 import BookingTableToolbar from './booking-table-toolbar';
-import type { IBookingItem, IBookingTableFilters, IBookingTableFilterValue } from './types';
+import type { IBookingItem, IBookingTableFilters, IBookingTableFilterValue } from '@/interfaces/booking.interface';
 
 // ----------------------------------------------------------------------
 
@@ -48,7 +49,12 @@ const defaultFilters: IBookingTableFilters = {
 export default function BookingListView() {
   const table = useTable({ defaultRowsPerPage: 10, defaultOrderBy: 'bookedAt', defaultOrder: 'desc' });
 
-  const [tableData] = useState<IBookingItem[]>(_bookingList);
+  const { data: bookingsData = [] } = useGetBookings();
+  const [tableData, setTableData] = useState<IBookingItem[]>([]);
+
+  useEffect(() => {
+    setTableData(bookingsData);
+  }, [bookingsData]);
   const [filters, setFilters] = useState(defaultFilters);
 
   const dataFiltered = applyFilter({

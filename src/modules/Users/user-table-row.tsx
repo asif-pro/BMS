@@ -16,7 +16,7 @@ import { ConfirmDialog } from '@/components/custom-dialog';
 import CustomPopover, { usePopover } from '@/components/custom-popover';
 
 import UserQuickEditForm from './user-quick-edit-form';
-import type { IUserItem } from './types';
+import type { IUserItem } from '@/interfaces/user.interface';
 
 // ----------------------------------------------------------------------
 

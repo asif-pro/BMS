@@ -11,7 +11,7 @@ import { alpha, useTheme } from '@mui/material/styles';
 
 import Iconify from '@/components/iconify';
 
-import type { TicketItem } from './types';
+import type { TicketItem } from '@/interfaces/ticket.interface';
 
 // ----------------------------------------------------------------------
 

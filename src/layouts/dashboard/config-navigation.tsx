@@ -99,7 +99,7 @@ export function useNavData() {
           },
           {
             title: t('NAV_ORGANIZATIONS'),
-            path: paths.dashboard.organizations,
+            path: paths.dashboard.organizations.root,
             icon: ICONS.organizations,
           },
           {

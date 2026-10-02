@@ -7,7 +7,12 @@ import { useTranslation } from 'react-i18next';
 
 import Iconify from '@/components/iconify';
 
-import type { IOrganizationFilters, IOrganizationFilterValue } from './types';
+import { ORGANIZATION_STATUS_LABEL_KEYS } from '@/constants/organization.constant';
+import type {
+  IOrganizationFilters,
+  IOrganizationFilterValue,
+  IOrganizationStatus,
+} from '@/interfaces/organization.interface';
 
 // ----------------------------------------------------------------------
 
@@ -29,35 +34,14 @@ export default function OrganizationFiltersResult({
 }: Props) {
   const { t } = useTranslation('index');
 
-  const handleRemovePartnershipTypes = (inputValue: string) => {
-    onFilters(
-      'partnershipTypes',
-      filters.partnershipTypes.filter((item) => item !== inputValue)
-    );
+  const handleRemoveStatus = () => {
+    onFilters('status', 'all');
   };
 
-  const handleRemoveSize = () => {
-    onFilters('size', 'all');
-  };
-
-  const handleRemoveCategories = (inputValue: string) => {
+  const handleRemoveSubscriptionPlans = (inputValue: string) => {
     onFilters(
-      'categories',
-      filters.categories.filter((item) => item !== inputValue)
-    );
-  };
-
-  const handleRemoveLocations = (inputValue: string) => {
-    onFilters(
-      'locations',
-      filters.locations.filter((item) => item !== inputValue)
-    );
-  };
-
-  const handleRemoveServices = (inputValue: string) => {
-    onFilters(
-      'services',
-      filters.services.filter((item) => item !== inputValue)
+      'subscriptionPlans',
+      filters.subscriptionPlans.filter((item) => item !== inputValue)
     );
   };
 
@@ -71,59 +55,24 @@ export default function OrganizationFiltersResult({
       </Box>
 
       <Stack flexGrow={1} spacing={1} direction="row" flexWrap="wrap" alignItems="center">
-        {!!filters.partnershipTypes.length && (
-          <Block label={t('PARTNERSHIP_LABEL')}>
-            {filters.partnershipTypes.map((item) => (
+        {filters.status !== 'all' && (
+          <Block label={t('STATUS_LABEL')}>
+            <Chip
+              size="small"
+              label={t(ORGANIZATION_STATUS_LABEL_KEYS[filters.status as IOrganizationStatus])}
+              onDelete={handleRemoveStatus}
+            />
+          </Block>
+        )}
+
+        {!!filters.subscriptionPlans.length && (
+          <Block label={t('SUBSCRIPTION_PLAN_LABEL')}>
+            {filters.subscriptionPlans.map((item) => (
               <Chip
                 key={item}
                 label={item}
                 size="small"
-                onDelete={() => handleRemovePartnershipTypes(item)}
-              />
-            ))}
-          </Block>
-        )}
-
-        {filters.size !== 'all' && (
-          <Block label={t('SIZE_LABEL')}>
-            <Chip size="small" label={filters.size} onDelete={handleRemoveSize} />
-          </Block>
-        )}
-
-        {!!filters.categories.length && (
-          <Block label={t('CATEGORIES_LABEL')}>
-            {filters.categories.map((item) => (
-              <Chip
-                key={item}
-                label={item}
-                size="small"
-                onDelete={() => handleRemoveCategories(item)}
-              />
-            ))}
-          </Block>
-        )}
-
-        {!!filters.locations.length && (
-          <Block label={t('LOCATIONS_LABEL')}>
-            {filters.locations.map((item) => (
-              <Chip
-                key={item}
-                label={item}
-                size="small"
-                onDelete={() => handleRemoveLocations(item)}
-              />
-            ))}
-          </Block>
-        )}
-
-        {!!filters.services.length && (
-          <Block label={t('SERVICES_LABEL')}>
-            {filters.services.map((item) => (
-              <Chip
-                key={item}
-                label={item}
-                size="small"
-                onDelete={() => handleRemoveServices(item)}
+                onDelete={() => handleRemoveSubscriptionPlans(item)}
               />
             ))}
           </Block>

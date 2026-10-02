@@ -15,15 +15,13 @@ import Scrollbar from '@/components/scrollbar';
 import { useSettingsContext } from '@/components/settings';
 import CustomBreadcrumbs from '@/components/custom-breadcrumbs';
 
+import { EXPENSE_CATEGORIES } from '@/constants/account.constant';
 import {
-  EXPENSE_CATEGORIES,
-  _walletCards,
-  _expenseTrend,
-  _incomeTrend,
-  _transactionList,
-  _staffSalaryList,
-  _balanceStatistics,
-} from './_mock';
+  useGetAccountTrends,
+  useGetStaffSalaries,
+  useGetTransactions,
+  useGetWalletCards,
+} from '@/hooks/useGetAccounts.hook';
 import AccountAnalytic from './account-analytic';
 import AccountBalanceCard from './account-balance-card';
 import AccountStaffSalary from './account-staff-salary';
@@ -40,12 +38,22 @@ export default function AccountsView() {
   const { t } = useTranslation('index');
 
   const settings = useSettingsContext();
+  const { data: transactionList = [] } = useGetTransactions();
+  const { data: staffSalaryList = [] } = useGetStaffSalaries();
+  const { data: walletCards = [] } = useGetWalletCards();
+  const { data: trends } = useGetAccountTrends();
+  const incomeTrend = trends?.incomeTrend ?? [];
+  const expenseTrend = trends?.expenseTrend ?? [];
+  const balanceStatistics = trends?.balanceStatistics ?? {
+    categories: [],
+    series: [],
+  };
 
   const stats = useMemo(() => {
-    const income = _transactionList.filter((item) => item.type === 'Income');
-    const expense = _transactionList.filter((item) => item.type === 'Expense');
-    const pending = _transactionList.filter((item) => item.status === 'pending');
-    const completed = _transactionList.filter((item) => item.status === 'completed');
+    const income = transactionList.filter((item) => item.type === 'Income');
+    const expense = transactionList.filter((item) => item.type === 'Expense');
+    const pending = transactionList.filter((item) => item.status === 'pending');
+    const completed = transactionList.filter((item) => item.status === 'completed');
 
     const completedIncome = sumBy(
       income.filter((item) => item.status === 'completed'),
@@ -57,7 +65,7 @@ export default function AccountsView() {
     );
 
     return {
-      all: { count: _transactionList.length, amount: sumBy(_transactionList, 'amount') },
+      all: { count: transactionList.length, amount: sumBy(transactionList, 'amount') },
       income: { count: income.length, amount: sumBy(income, 'amount') },
       expense: { count: expense.length, amount: sumBy(expense, 'amount') },
       pending: { count: pending.length, amount: sumBy(pending, 'amount') },
@@ -69,14 +77,14 @@ export default function AccountsView() {
       completedIncome,
       completedExpense,
     };
-  }, []);
+  }, [transactionList]);
 
   const getPercent = (count: number) => (count / stats.all.count) * 100;
 
   const expenseSeries = EXPENSE_CATEGORIES.map((category) => ({
     label: category,
     value: sumBy(
-      _transactionList.filter(
+      transactionList.filter(
         (item) =>
           item.type === 'Expense' && item.category === category && item.status === 'completed'
       ),
@@ -84,7 +92,7 @@ export default function AccountsView() {
     ),
   }));
 
-  const recentTransactions = [..._transactionList]
+  const recentTransactions = [...transactionList]
     .sort((a, b) => b.date.getTime() - a.date.getTime())
     .slice(0, 8);
 
@@ -104,7 +112,7 @@ export default function AccountsView() {
               icon="eva:diagonal-arrow-left-down-fill"
               percent={2.6}
               total={stats.completedIncome}
-              chart={{ series: _incomeTrend }}
+              chart={{ series: incomeTrend }}
             />
 
             <AccountWidgetSummary
@@ -113,13 +121,13 @@ export default function AccountsView() {
               icon="eva:diagonal-arrow-right-up-fill"
               percent={-0.5}
               total={stats.completedExpense}
-              chart={{ series: _expenseTrend }}
+              chart={{ series: expenseTrend }}
             />
           </Stack>
         </Grid>
 
         <Grid xs={12} md={5}>
-          <AccountBalanceCard card={_walletCards[0]} />
+          {walletCards[0] && <AccountBalanceCard card={walletCards[0]} />}
         </Grid>
 
         <Grid xs={12}>
@@ -182,7 +190,7 @@ export default function AccountsView() {
         </Grid>
 
         <Grid xs={12}>
-          <AccountTransactionsTable tableData={_transactionList} />
+          <AccountTransactionsTable tableData={transactionList} />
         </Grid>
 
         <Grid xs={12} md={5}>
@@ -211,7 +219,7 @@ export default function AccountsView() {
         </Grid>
 
         <Grid xs={12}>
-          <AccountStaffSalary tableData={_staffSalaryList} />
+          <AccountStaffSalary tableData={staffSalaryList} />
         </Grid>
 
         <Grid xs={12}>
@@ -219,8 +227,8 @@ export default function AccountsView() {
             title={t('BALANCE_STATISTICS')}
             subheader={t('BALANCE_STATISTICS_SUBHEADER')}
             chart={{
-              categories: _balanceStatistics.categories,
-              series: _balanceStatistics.series,
+              categories: balanceStatistics.categories,
+              series: balanceStatistics.series,
             }}
           />
         </Grid>

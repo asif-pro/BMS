@@ -7,7 +7,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 
 import Iconify from '@/components/iconify';
 
-import type { IBookingTableFilters, IBookingTableFilterValue } from './types';
+import type { IBookingTableFilters, IBookingTableFilterValue } from '@/interfaces/booking.interface';
 
 // ----------------------------------------------------------------------
 

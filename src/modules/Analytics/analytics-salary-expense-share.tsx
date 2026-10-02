@@ -1,3 +1,4 @@
+import { ROLE_ICONS } from '@/constants/staff.constant';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
@@ -27,17 +28,6 @@ type Props = {
   salaryExpense: number;
   salaryPercent: number;
   byRole: RoleShareItem[];
-};
-
-const ROLE_ICONS: Record<string, string> = {
-  Admin: 'solar:shield-user-bold-duotone',
-  Driver: 'solar:bus-bold-duotone',
-  Manager: 'solar:case-round-bold-duotone',
-  Helper: 'solar:users-group-rounded-bold-duotone',
-  Mechanic: 'solar:wrench-bold-duotone',
-  Supervisor: 'solar:clipboard-check-bold-duotone',
-  Conductor: 'solar:ticket-bold-duotone',
-  Other: 'solar:user-bold-duotone',
 };
 
 export default function AnalyticsSalaryExpenseShare({

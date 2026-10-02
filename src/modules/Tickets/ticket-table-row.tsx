@@ -10,17 +10,10 @@ import { fDate, fTime } from '@/utils/format-time';
 
 import Label from '@/components/label';
 
-import type { TicketItem, TicketStatus } from './types';
+import { TICKET_STATUS_COLOR } from '@/constants/ticket.constant';
+import type { TicketItem, TicketStatus } from '@/interfaces/ticket.interface';
 
 // ----------------------------------------------------------------------
-
-const STATUS_COLOR: Record<TicketStatus, 'info' | 'success' | 'warning' | 'error' | 'default'> = {
-  upcoming: 'info',
-  active: 'success',
-  routing: 'warning',
-  canceled: 'error',
-  completed: 'default',
-};
 
 type Props = {
   row: TicketItem;
@@ -122,7 +115,7 @@ export default function TicketTableRow({ row, onViewRow }: Props) {
       </TableCell>
 
       <TableCell>
-        <Label variant="soft" color={STATUS_COLOR[status]}>
+        <Label variant="soft" color={TICKET_STATUS_COLOR[status]}>
           {statusLabel[status]}
         </Label>
       </TableCell>

@@ -28,7 +28,7 @@ import { useMockedUser } from '@/hooks/use-mocked-user';
 import Label from '@/components/label';
 import Iconify from '@/components/iconify';
 
-import type { TicketItem, TicketSeat, TicketSeatColumn } from './types';
+import type { TicketItem, TicketSeat, TicketSeatColumn } from '@/interfaces/ticket.interface';
 
 // ----------------------------------------------------------------------
 

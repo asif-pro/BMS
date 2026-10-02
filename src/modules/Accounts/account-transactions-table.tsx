@@ -34,8 +34,9 @@ import {
   TablePaginationCustom,
 } from '@/components/table';
 
-import { CATEGORY_ICONS, getTransactionMonthOptions } from './_mock';
-import type { ITransactionItem } from './types';
+import { CATEGORY_ICONS } from '@/constants/account.constant';
+import { getTransactionMonthOptions } from '@/utils/account';
+import type { ITransactionItem } from '@/interfaces/account.interface';
 
 // ----------------------------------------------------------------------
 

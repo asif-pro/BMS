@@ -12,7 +12,7 @@ import Iconify from '@/components/iconify';
 import SearchNotFound from '@/components/search-not-found';
 import { match, parse } from '@/utils/highlight-match';
 
-import type { TicketItem } from './types';
+import type { TicketItem } from '@/interfaces/ticket.interface';
 
 // ----------------------------------------------------------------------
 

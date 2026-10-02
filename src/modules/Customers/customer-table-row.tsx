@@ -13,7 +13,7 @@ import Iconify from '@/components/iconify';
 import { ConfirmDialog } from '@/components/custom-dialog';
 import CustomPopover, { usePopover } from '@/components/custom-popover';
 
-import type { ICustomerItem } from './types';
+import type { ICustomerItem } from '@/interfaces/customer.interface';
 
 // ----------------------------------------------------------------------
 

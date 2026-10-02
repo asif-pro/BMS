@@ -21,10 +21,9 @@ import { fData } from '@/utils/format-number';
 import Label from '@/components/label';
 import { useSnackbar } from '@/components/snackbar';
 
-import { _roles } from './_mock';
-import { COUNTRY_OPTIONS } from './countries';
+import { COUNTRY_OPTIONS, USER_ROLES } from '@/constants/user.constant';
 import StaffAvatarUpload from './staff-avatar-upload';
-import type { IUserItem } from './types';
+import type { IUserItem } from '@/interfaces/user.interface';
 
 // ----------------------------------------------------------------------
 
@@ -383,7 +382,7 @@ export default function UserNewEditForm({
                 <MenuItem value="">
                   <em>{t('SELECT_ROLE')}</em>
                 </MenuItem>
-                {_roles.map((role) => (
+                {USER_ROLES.map((role) => (
                   <MenuItem key={role} value={role}>
                     {role}
                   </MenuItem>

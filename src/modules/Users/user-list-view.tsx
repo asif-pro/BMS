@@ -1,5 +1,5 @@
 import isEqual from 'lodash/isEqual';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Tab from '@mui/material/Tab';
@@ -19,7 +19,7 @@ import { paths } from '@/routes/paths';
 import { useRouter } from '@/routes/hooks';
 import { RouterLink } from '@/routes/components';
 
-import { _staffByRole } from '@/modules/Analytics/_mock';
+import { useGetStaffByRole } from '@/hooks/useGetAnalytics.hook';
 import DashboardStaffOverview from '@/modules/Dashboard/components/dashboard-staff-overview';
 
 import Label from '@/components/label';
@@ -38,24 +38,17 @@ import {
   TablePaginationCustom,
 } from '@/components/table';
 
-import { _roles, _userList } from './_mock';
+import { USER_ROLES, USER_STATUS_TAB_OPTIONS } from '@/constants/user.constant';
+import { useGetUsers } from '@/hooks/useGetUsers.hook';
 import UserTableRow from './user-table-row';
 import { StaffCardList } from './staff-card';
 import UserTableToolbar from './user-table-toolbar';
 import UserTableFiltersResult from './user-table-filters-result';
-import type { IUserItem, IUserTableFilters, IUserTableFilterValue } from './types';
+import type { IUserItem, IUserTableFilters, IUserTableFilterValue } from '@/interfaces/user.interface';
 
 // ----------------------------------------------------------------------
 
 type ViewMode = 'list' | 'grid';
-
-const STATUS_OPTIONS = [
-  { value: 'all', label: 'ALL' },
-  { value: 'active', label: 'ACTIVE' },
-  { value: 'pending', label: 'PENDING' },
-  { value: 'banned', label: 'BANNED' },
-  { value: 'rejected', label: 'REJECTED' },
-];
 
 const TABLE_HEAD = [
   { id: 'name', label: 'NAME' },
@@ -84,7 +77,13 @@ export default function UserListView() {
 
   const [view, setView] = useState<ViewMode>('list');
 
-  const [tableData, setTableData] = useState<IUserItem[]>(_userList);
+  const { data: usersData = [] } = useGetUsers();
+  const { data: staffByRole = [] } = useGetStaffByRole();
+  const [tableData, setTableData] = useState<IUserItem[]>([]);
+
+  useEffect(() => {
+    setTableData(usersData);
+  }, [usersData]);
 
   const [filters, setFilters] = useState(defaultFilters);
 
@@ -183,7 +182,7 @@ export default function UserListView() {
       <DashboardStaffOverview
         title={t('STAFF_OVERVIEW')}
         compact
-        list={_staffByRole.map((item) => ({
+        list={staffByRole.map((item) => ({
           ...item,
           icon: 'solar:user-bold-duotone',
         }))}
@@ -210,7 +209,7 @@ export default function UserListView() {
               minWidth: 0,
             }}
           >
-            {STATUS_OPTIONS.map((tab) => (
+            {USER_STATUS_TAB_OPTIONS.map((tab) => (
               <Tab
                 key={tab.value}
                 iconPosition="end"
@@ -253,7 +252,7 @@ export default function UserListView() {
           </ToggleButtonGroup>
         </Stack>
 
-        <UserTableToolbar filters={filters} onFilters={handleFilters} roleOptions={_roles} />
+        <UserTableToolbar filters={filters} onFilters={handleFilters} roleOptions={USER_ROLES} />
 
         {canReset && (
           <UserTableFiltersResult

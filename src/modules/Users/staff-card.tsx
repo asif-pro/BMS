@@ -17,7 +17,7 @@ import Iconify from '@/components/iconify';
 import { ConfirmDialog } from '@/components/custom-dialog';
 import CustomPopover, { usePopover } from '@/components/custom-popover';
 
-import type { IUserItem } from './types';
+import type { IUserItem } from '@/interfaces/user.interface';
 
 // ----------------------------------------------------------------------
 

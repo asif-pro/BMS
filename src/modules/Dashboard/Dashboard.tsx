@@ -5,12 +5,7 @@ import Container from '@mui/material/Container';
 import Grid from '@mui/material/Unstable_Grid2';
 import Typography from '@mui/material/Typography';
 
-import {
-  _topDrivers,
-  _topStaff,
-  _fleetByBrand,
-} from '@/modules/Analytics/_mock';
-import { _vehicles } from '@/modules/Vehicles/_mock';
+import { useGetDashboard } from '@/hooks/useGetDashboard.hook';
 
 import { useSettingsContext } from '@/components/settings';
 
@@ -27,30 +22,31 @@ import DashboardCheckInWidgets from './components/dashboard-check-in-widgets';
 
 const SPACING = 3;
 
-const INCOME_TREND = [
-  { x: 1, y: 111 },
-  { x: 2, y: 136 },
-  { x: 3, y: 76 },
-  { x: 4, y: 108 },
-  { x: 5, y: 74 },
-  { x: 6, y: 54 },
-  { x: 7, y: 57 },
-  { x: 8, y: 84 },
-];
-
-const countVehicles = (status: string) =>
-  _vehicles.filter((vehicle) => vehicle.status === status).length;
-
 export default function Dashboard() {
   const { t } = useTranslation('index');
 
   const settings = useSettingsContext();
+  const { data } = useGetDashboard();
+
+  const vehicles = data?.vehicles ?? [];
+  const topDrivers = data?.topDrivers ?? [];
+  const topStaff = data?.topStaff ?? [];
+  const fleetByBrand = data?.fleetByBrand ?? [];
+  const incomeTrend = data?.incomeTrend ?? [];
+  const summary = data?.summary;
+
+  const countVehicles = (status: string) =>
+    vehicles.filter((vehicle) => vehicle.status === status).length;
 
   const bookedStatus = [
     { status: t('PAID'), quantity: 12840, value: 72 },
     { status: t('PENDING'), quantity: 3560, value: 20 },
     { status: t('CANCELLED'), quantity: 1420, value: 8 },
   ];
+
+  if (!data || !summary) {
+    return null;
+  }
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'xl'} disableGutters>
@@ -65,7 +61,7 @@ export default function Dashboard() {
         <Grid xs={12} md={4}>
           <DashboardWidgetSummary
             title={t('TOTAL_BOOKINGS')}
-            total={17820}
+            total={summary.totalBookings}
             icon="solar:calendar-mark-bold-duotone"
             color="primary"
           />
@@ -74,7 +70,7 @@ export default function Dashboard() {
         <Grid xs={12} md={4}>
           <DashboardWidgetSummary
             title={t('TICKETS_SOLD')}
-            total={31100}
+            total={summary.ticketsSold}
             icon="solar:ticket-bold-duotone"
             color="success"
           />
@@ -96,7 +92,7 @@ export default function Dashboard() {
                 title={t('TOTAL_INCOMES')}
                 total={1876500}
                 percent={2.6}
-                chart={{ series: INCOME_TREND }}
+                chart={{ series: incomeTrend }}
               />
             </Grid>
 
@@ -134,7 +130,7 @@ export default function Dashboard() {
           <DashboardFleetByBrand
             title={t('FLEET_BY_BRAND')}
             subheader={t('FLEET_BY_BRAND_SUBHEADER')}
-            list={_fleetByBrand}
+            list={fleetByBrand}
           />
         </Grid>
 
@@ -142,7 +138,7 @@ export default function Dashboard() {
           <DashboardTopDrivers
             title={t('TOP_DRIVERS')}
             subheader={t('TOP_DRIVERS_SUBHEADER')}
-            list={_topDrivers.slice(0, 4)}
+            list={topDrivers.slice(0, 4)}
           />
         </Grid>
 
@@ -150,7 +146,7 @@ export default function Dashboard() {
           <DashboardTopStaff
             title={t('TOP_STAFF')}
             subheader={t('TOP_STAFF_SUBHEADER')}
-            list={_topStaff.slice(0, 4)}
+            list={topStaff.slice(0, 4)}
           />
         </Grid>
       </Grid>

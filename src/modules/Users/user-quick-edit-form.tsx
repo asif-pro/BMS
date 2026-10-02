@@ -13,8 +13,8 @@ import DialogContent from '@mui/material/DialogContent';
 
 import { useSnackbar } from '@/components/snackbar';
 
-import { _roles, USER_STATUS_OPTIONS } from './_mock';
-import type { IUserItem } from './types';
+import { USER_ROLES, USER_STATUS_OPTIONS } from '@/constants/user.constant';
+import type { IUserItem } from '@/interfaces/user.interface';
 
 // ----------------------------------------------------------------------
 
@@ -168,7 +168,7 @@ export default function UserQuickEditForm({ currentUser, open, onClose }: Props)
               <MenuItem value="">
                 <em>{t('SELECT_ROLE')}</em>
               </MenuItem>
-              {_roles.map((role) => (
+              {USER_ROLES.map((role) => (
                 <MenuItem key={role} value={role}>
                   {role}
                 </MenuItem>

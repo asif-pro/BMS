@@ -9,6 +9,8 @@ import ListItemText from '@mui/material/ListItemText';
 
 import { useTranslation } from 'react-i18next';
 
+import { useGetContacts } from '@/hooks/useGetContacts.hook';
+
 import Iconify from '@/components/iconify';
 import Scrollbar from '@/components/scrollbar';
 import { varHover } from '@/components/animate';
@@ -16,15 +18,10 @@ import CustomPopover, { usePopover } from '@/components/custom-popover';
 
 // ----------------------------------------------------------------------
 
-const MOCK_CONTACTS = [
-  { id: '1', name: 'Fleet Dispatcher', role: 'Support', status: 'online' },
-  { id: '2', name: 'Maintenance Depot', role: 'Operations', status: 'online' },
-  { id: '3', name: 'Chief Transit Officer', role: 'Supervisor', status: 'busy' },
-];
-
 export default function ContactsPopover() {
   const { t } = useTranslation('index');
   const popover = usePopover();
+  const { data: contacts = [] } = useGetContacts();
 
   return (
     <>
@@ -48,12 +45,12 @@ export default function ContactsPopover() {
         <Typography variant="h6" sx={{ p: 1.5 }}>
           {t('CONTACTS')}{' '}
           <Typography component="span" sx={{ color: 'text.secondary', typography: 'body2' }}>
-            ({MOCK_CONTACTS.length})
+            ({contacts.length})
           </Typography>
         </Typography>
 
         <Scrollbar sx={{ maxHeight: 320 }}>
-          {MOCK_CONTACTS.map((contact) => (
+          {contacts.map((contact) => (
             <MenuItem key={contact.id} sx={{ p: 1 }}>
               <Badge
                 variant="dot"

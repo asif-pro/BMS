@@ -1,7 +1,6 @@
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import Chip from '@mui/material/Chip';
 import Radio from '@mui/material/Radio';
 import Stack from '@mui/material/Stack';
 import Badge from '@mui/material/Badge';
@@ -10,18 +9,26 @@ import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import Tooltip from '@mui/material/Tooltip';
 import Checkbox from '@mui/material/Checkbox';
-import TextField from '@mui/material/TextField';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
-import Autocomplete from '@mui/material/Autocomplete';
 import FormControlLabel from '@mui/material/FormControlLabel';
 
 import Iconify from '@/components/iconify';
 import Scrollbar from '@/components/scrollbar';
 
-import type { IOrganizationFilters, IOrganizationFilterValue } from './types';
+import { ORGANIZATION_STATUS_LABEL_KEYS } from '@/constants/organization.constant';
+import type {
+  IOrganizationFilters,
+  IOrganizationFilterValue,
+  IOrganizationStatus,
+} from '@/interfaces/organization.interface';
 
 // ----------------------------------------------------------------------
+
+type StatusOption = {
+  value: string;
+  labelKey: string;
+};
 
 type Props = {
   open: boolean;
@@ -31,11 +38,8 @@ type Props = {
   onFilters: (name: string, value: IOrganizationFilterValue) => void;
   canReset: boolean;
   onResetFilters: VoidFunction;
-  categoryOptions: string[];
-  serviceOptions: string[];
-  sizeOptions: string[];
-  partnershipTypeOptions: string[];
-  locationOptions: string[];
+  statusOptions: StatusOption[];
+  subscriptionPlanOptions: string[];
 };
 
 export default function OrganizationFilters({
@@ -46,53 +50,26 @@ export default function OrganizationFilters({
   onFilters,
   canReset,
   onResetFilters,
-  categoryOptions,
-  locationOptions,
-  serviceOptions,
-  sizeOptions,
-  partnershipTypeOptions,
+  statusOptions,
+  subscriptionPlanOptions,
 }: Props) {
   const { t } = useTranslation('index');
 
-  const handleFilterPartnershipTypes = useCallback(
+  const handleFilterStatus = useCallback(
     (newValue: string) => {
-      const checked = filters.partnershipTypes.includes(newValue)
-        ? filters.partnershipTypes.filter((value) => value !== newValue)
-        : [...filters.partnershipTypes, newValue];
-      onFilters('partnershipTypes', checked);
-    },
-    [filters.partnershipTypes, onFilters]
-  );
-
-  const handleFilterSize = useCallback(
-    (newValue: string) => {
-      onFilters('size', newValue);
+      onFilters('status', newValue);
     },
     [onFilters]
   );
 
-  const handleFilterCategories = useCallback(
-    (newValue: string[]) => {
-      onFilters('categories', newValue);
-    },
-    [onFilters]
-  );
-
-  const handleFilterLocations = useCallback(
-    (newValue: string[]) => {
-      onFilters('locations', newValue);
-    },
-    [onFilters]
-  );
-
-  const handleFilterServices = useCallback(
+  const handleFilterSubscriptionPlans = useCallback(
     (newValue: string) => {
-      const checked = filters.services.includes(newValue)
-        ? filters.services.filter((value) => value !== newValue)
-        : [...filters.services, newValue];
-      onFilters('services', checked);
+      const checked = filters.subscriptionPlans.includes(newValue)
+        ? filters.subscriptionPlans.filter((value) => value !== newValue)
+        : [...filters.subscriptionPlans, newValue];
+      onFilters('subscriptionPlans', checked);
     },
-    [filters.services, onFilters]
+    [filters.subscriptionPlans, onFilters]
   );
 
   return (
@@ -150,38 +127,27 @@ export default function OrganizationFilters({
           <Stack spacing={3}>
             <Stack>
               <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                {t('PARTNERSHIP_TYPES')}
+                {t('STATUS')}
               </Typography>
-              {partnershipTypeOptions.map((option) => (
+              {statusOptions.map((option) => (
                 <FormControlLabel
-                  key={option}
-                  control={
-                    <Checkbox
-                      checked={filters.partnershipTypes.includes(option)}
-                      onClick={() => handleFilterPartnershipTypes(option)}
-                    />
-                  }
-                  label={option}
-                />
-              ))}
-            </Stack>
-
-            <Stack>
-              <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                {t('FLEET_SIZE')}
-              </Typography>
-              {sizeOptions.map((option) => (
-                <FormControlLabel
-                  key={option}
+                  key={option.value}
                   control={
                     <Radio
-                      checked={option === filters.size}
-                      onClick={() => handleFilterSize(option)}
+                      checked={option.value === filters.status}
+                      onClick={() => handleFilterStatus(option.value)}
                     />
                   }
-                  label={option === 'all' ? t('ALL') : option}
+                  label={
+                    option.value === 'all'
+                      ? t('ALL')
+                      : t(
+                          ORGANIZATION_STATUS_LABEL_KEYS[option.value as IOrganizationStatus] ||
+                            option.labelKey
+                        )
+                  }
                   sx={{
-                    ...(option === 'all' && {
+                    ...(option.value === 'all' && {
                       textTransform: 'capitalize',
                     }),
                   }}
@@ -190,87 +156,16 @@ export default function OrganizationFilters({
             </Stack>
 
             <Stack>
-              <Typography variant="subtitle2" sx={{ mb: 1.5 }}>
-                {t('CATEGORIES')}
-              </Typography>
-              <Autocomplete
-                multiple
-                disableCloseOnSelect
-                options={categoryOptions}
-                getOptionLabel={(option) => option}
-                value={filters.categories}
-                onChange={(_event, newValue) => handleFilterCategories(newValue)}
-                renderInput={(params) => (
-                  <TextField placeholder={t('SELECT_CATEGORIES')} {...params} />
-                )}
-                renderOption={(props, option) => (
-                  <li {...props} key={option}>
-                    {option}
-                  </li>
-                )}
-                renderTags={(selected, getTagProps) =>
-                  selected.map((option, index) => (
-                    <Chip
-                      {...getTagProps({ index })}
-                      key={option}
-                      label={option}
-                      size="small"
-                      variant="soft"
-                    />
-                  ))
-                }
-              />
-            </Stack>
-
-            <Stack>
-              <Typography variant="subtitle2" sx={{ mb: 1.5 }}>
-                {t('LOCATIONS')}
-              </Typography>
-              <Autocomplete
-                multiple
-                disableCloseOnSelect
-                options={locationOptions}
-                getOptionLabel={(option) => option}
-                value={filters.locations}
-                onChange={(_event, newValue) => handleFilterLocations(newValue)}
-                renderInput={(params) => (
-                  <TextField
-                    placeholder={
-                      filters.locations.length ? t('ADD_LOCATIONS') : t('SELECT_LOCATIONS')
-                    }
-                    {...params}
-                  />
-                )}
-                renderOption={(props, option) => (
-                  <li {...props} key={option}>
-                    {option}
-                  </li>
-                )}
-                renderTags={(selected, getTagProps) =>
-                  selected.map((option, index) => (
-                    <Chip
-                      {...getTagProps({ index })}
-                      key={option}
-                      label={option}
-                      size="small"
-                      variant="soft"
-                    />
-                  ))
-                }
-              />
-            </Stack>
-
-            <Stack>
               <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                {t('SERVICES')}
+                {t('SUBSCRIPTION_PLAN')}
               </Typography>
-              {serviceOptions.map((option) => (
+              {subscriptionPlanOptions.map((option) => (
                 <FormControlLabel
                   key={option}
                   control={
                     <Checkbox
-                      checked={filters.services.includes(option)}
-                      onClick={() => handleFilterServices(option)}
+                      checked={filters.subscriptionPlans.includes(option)}
+                      onClick={() => handleFilterSubscriptionPlans(option)}
                     />
                   }
                   label={option}

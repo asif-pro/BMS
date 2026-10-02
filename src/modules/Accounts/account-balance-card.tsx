@@ -12,7 +12,7 @@ import { bgGradient } from '@/theme/css';
 
 import Iconify from '@/components/iconify';
 
-import type { IWalletCard } from './types';
+import type { IWalletCard } from '@/interfaces/account.interface';
 
 // ----------------------------------------------------------------------
 

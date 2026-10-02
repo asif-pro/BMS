@@ -1,5 +1,5 @@
 import sumBy from 'lodash/sumBy';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Tab from '@mui/material/Tab';
@@ -29,7 +29,8 @@ import {
   TablePaginationCustom,
 } from '@/components/table';
 
-import { _maintenanceList } from './_mock';
+import { useGetMaintenance } from '@/hooks/useGetMaintenance.hook';
+
 import MaintenanceAnalytic from './maintenance-analytic';
 import MaintenanceTableRow from './maintenance-table-row';
 import MaintenanceTableToolbar from './maintenance-table-toolbar';
@@ -38,7 +39,7 @@ import type {
   IMaintenanceStatus,
   IMaintenanceTableFilters,
   IMaintenanceTableFilterValue,
-} from './types';
+} from '@/interfaces/maintenance.interface';
 
 // ----------------------------------------------------------------------
 
@@ -74,7 +75,12 @@ export default function MaintenanceListView() {
     defaultOrder: 'desc',
   });
 
-  const [tableData, setTableData] = useState<IMaintenanceItem[]>(_maintenanceList);
+  const { data: maintenanceData = [] } = useGetMaintenance();
+  const [tableData, setTableData] = useState<IMaintenanceItem[]>([]);
+
+  useEffect(() => {
+    setTableData(maintenanceData);
+  }, [maintenanceData]);
   const [filters, setFilters] = useState(defaultFilters);
 
   const dataFiltered = applyFilter({

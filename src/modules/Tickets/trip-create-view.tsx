@@ -33,44 +33,17 @@ import Image from '@/components/image';
 import Iconify from '@/components/iconify';
 import CustomBreadcrumbs from '@/components/custom-breadcrumbs';
 
+import { STOPPAGE_CITIES } from '@/constants/ticket.constant';
+import { useGetOperators, useGetTicketVehicles } from '@/hooks/useGetTickets.hook';
+import type { TicketOperator, TicketVehicleOption } from '@/interfaces/ticket.interface';
+import { formatTicketVehicleOption } from '@/utils/ticket';
+
 import { ticketPaths } from './paths';
-import {
-  DESTINATIONS,
-  _operators,
-  _ticketVehicles,
-  formatTicketVehicleOption,
-  type TicketVehicleOption,
-} from './_mock';
 import LayoutPreview from './layout-preview';
 import { SEAT_LAYOUTS } from './seat-layouts';
 import VehicleOptionLabel from './vehicle-option-label';
-import type { TicketOperator } from './types';
 
 // ----------------------------------------------------------------------
-
-const STOPPAGE_CITIES = Array.from(
-  new Set([
-    ...DESTINATIONS,
-    'Narsingdi',
-    'Bhairab',
-    'Brahmanbaria',
-    'Cumilla',
-    'Feni',
-    'Mirsharai',
-    'Tangail',
-    'Sirajganj',
-    'Gazipur',
-    'Uttara',
-    'Faridpur',
-    'Jashore',
-    'Mawa',
-    'Madaripur',
-    'Satkania',
-    'Lohagara',
-    'Chakaria',
-    'Trishal',
-  ])
-).sort((a, b) => a.localeCompare(b));
 
 const SERVICE_OPTIONS = [
   { value: 'Wi-Fi', labelKey: 'AMENITY_WIFI', icon: 'solar:wi-fi-bold' },
@@ -109,6 +82,8 @@ export default function TripCreateView() {
   const { t } = useTranslation();
   const router = useRouter();
   const mdUp = useMediaQuery((theme: Theme) => theme.breakpoints.up('md'));
+  const { data: _operators = [] } = useGetOperators();
+  const { data: _ticketVehicles = [] } = useGetTicketVehicles();
 
   const steps = useMemo(() => [t('DETAILS'), t('STOPPAGES'), t('SERVICES')], [t]);
 

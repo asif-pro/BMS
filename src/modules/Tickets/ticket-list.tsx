@@ -2,7 +2,7 @@ import Box from '@mui/material/Box';
 import Pagination, { paginationClasses } from '@mui/material/Pagination';
 
 import TicketItem from './ticket-item';
-import type { TicketItem as TicketItemType } from './types';
+import type { TicketItem as TicketItemType } from '@/interfaces/ticket.interface';
 
 // ----------------------------------------------------------------------
 

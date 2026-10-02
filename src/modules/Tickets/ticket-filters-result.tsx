@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 import Iconify from '@/components/iconify';
 import { shortDateLabel } from '@/utils/short-date-label';
 
-import type { TicketFilterValue, TicketFilters, TicketOperator } from './types';
+import type { TicketFilterValue, TicketFilters, TicketOperator } from '@/interfaces/ticket.interface';
 
 // ----------------------------------------------------------------------
 

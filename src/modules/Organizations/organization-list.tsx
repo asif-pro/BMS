@@ -1,13 +1,8 @@
-import { useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
-
 import Box from '@mui/material/Box';
 import Pagination, { paginationClasses } from '@mui/material/Pagination';
 
-import { useSnackbar } from '@/components/snackbar';
-
 import OrganizationItem from './organization-item';
-import type { IOrganizationItem } from './types';
+import type { IOrganizationItem } from '@/interfaces/organization.interface';
 
 // ----------------------------------------------------------------------
 
@@ -16,30 +11,6 @@ type Props = {
 };
 
 export default function OrganizationList({ organizations }: Props) {
-  const { t } = useTranslation('index');
-  const { enqueueSnackbar } = useSnackbar();
-
-  const handleView = useCallback(
-    (id: string) => {
-      enqueueSnackbar(t('VIEW_ORGANIZATION', { id }));
-    },
-    [enqueueSnackbar, t]
-  );
-
-  const handleEdit = useCallback(
-    (id: string) => {
-      enqueueSnackbar(t('EDIT_ORGANIZATION', { id }));
-    },
-    [enqueueSnackbar, t]
-  );
-
-  const handleDelete = useCallback(
-    (id: string) => {
-      enqueueSnackbar(t('DELETE_ORGANIZATION', { id }), { variant: 'warning' });
-    },
-    [enqueueSnackbar, t]
-  );
-
   return (
     <>
       <Box
@@ -52,13 +23,7 @@ export default function OrganizationList({ organizations }: Props) {
         }}
       >
         {organizations.map((organization) => (
-          <OrganizationItem
-            key={organization.id}
-            organization={organization}
-            onView={() => handleView(organization.id)}
-            onEdit={() => handleEdit(organization.id)}
-            onDelete={() => handleDelete(organization.id)}
-          />
+          <OrganizationItem key={organization.id} organization={organization} />
         ))}
       </Box>
 

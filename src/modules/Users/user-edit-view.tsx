@@ -7,7 +7,7 @@ import { paths } from '@/routes/paths';
 import EmptyContent from '@/components/empty-content';
 import CustomBreadcrumbs from '@/components/custom-breadcrumbs';
 
-import { _userList } from './_mock';
+import { useGetUserById } from '@/hooks/useGetUsers.hook';
 import UserNewEditForm from './user-new-edit-form';
 
 // ----------------------------------------------------------------------
@@ -15,7 +15,7 @@ import UserNewEditForm from './user-new-edit-form';
 export default function UserEditView() {
   const { id = '' } = useParams();
 
-  const currentUser = _userList.find((user) => user.id === id);
+  const { data: currentUser } = useGetUserById(id);
 
   return (
     <Container maxWidth={false} disableGutters>

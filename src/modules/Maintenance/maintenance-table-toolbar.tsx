@@ -8,8 +8,8 @@ import { useTranslation } from 'react-i18next';
 
 import Iconify from '@/components/iconify';
 
-import { MAINTENANCE_TYPES } from './_mock';
-import type { IMaintenanceTableFilters, IMaintenanceTableFilterValue } from './types';
+import { MAINTENANCE_TYPES } from '@/constants/maintenance.constant';
+import type { IMaintenanceTableFilters, IMaintenanceTableFilterValue } from '@/interfaces/maintenance.interface';
 
 // ----------------------------------------------------------------------
 

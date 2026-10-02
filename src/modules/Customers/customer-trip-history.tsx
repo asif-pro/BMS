@@ -16,7 +16,7 @@ import EmptyContent from '@/components/empty-content';
 import Scrollbar from '@/components/scrollbar';
 import { TableHeadCustom } from '@/components/table';
 
-import type { ICustomerTripHistoryItem } from './types';
+import type { ICustomerTripHistoryItem } from '@/interfaces/customer.interface';
 
 // ----------------------------------------------------------------------
 

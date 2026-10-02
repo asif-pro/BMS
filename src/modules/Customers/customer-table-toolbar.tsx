@@ -7,7 +7,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 
 import Iconify from '@/components/iconify';
 
-import type { ICustomerTableFilters, ICustomerTableFilterValue } from './types';
+import type { ICustomerTableFilters, ICustomerTableFilterValue } from '@/interfaces/customer.interface';
 
 // ----------------------------------------------------------------------
 
